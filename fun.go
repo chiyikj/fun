@@ -282,7 +282,7 @@ func (fun *Fun) handleOtherRequests(ctx Ctx, request *request) {
 	ctx.MethodName = request.MethodName
 	ctx.RequestId = request.Id
 	if method.onType != nil {
-		_conn, ok := fun.connList.Load(ctx.RequestId)
+		_conn, ok := fun.connList.Load(ctx.Id)
 		if ok {
 			_conn.(ws).onList.Store(request.Id, &onType{
 				methodName: request.MethodName,
