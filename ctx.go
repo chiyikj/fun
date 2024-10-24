@@ -1,4 +1,4 @@
-package main
+package fun
 
 type Ctx struct {
 	Ip         string
