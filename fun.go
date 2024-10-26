@@ -317,6 +317,10 @@ func (fun *Fun) close(id string, requestId string) {
 			(*on.(onType).callBack)()
 		}
 		_conn.(ws).onList.Delete(requestId)
+		fun.send(id, Result{
+			Id:     requestId,
+			Status: CloseError,
+		})
 	}
 }
 
