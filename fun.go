@@ -74,13 +74,15 @@ func New() *Fun {
 // Start 启动
 func (fun *Fun) Start(addr uint16) {
 	http.HandleFunc("/", handleWebSocket(fun))
-	_ = http.ListenAndServe(":"+strconv.Itoa(int(addr)), nil)
+	err := http.ListenAndServe(":"+strconv.Itoa(int(addr)), nil)
+	fmt.Println(err)
 }
 
 // StartTls ssl启动
 func (fun *Fun) StartTls(addr uint16, certFile string, keyFile string) {
 	http.HandleFunc("/", handleWebSocket(fun))
-	_ = http.ListenAndServeTLS(":"+strconv.Itoa(int(addr)), certFile, keyFile, nil)
+	err := http.ListenAndServeTLS(":"+strconv.Itoa(int(addr)), certFile, keyFile, nil)
+	fmt.Println(err)
 }
 
 // Check 绑定数据校验规则
