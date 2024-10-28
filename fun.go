@@ -57,7 +57,7 @@ type ws struct {
 	onList *sync.Map
 }
 
-type interceptFunc func(state map[string]any) bool
+type interceptFunc func(state map[string]any) *Result
 type checkFunc func(p reflect.Type, value any, rule string) *Result
 
 func New() *Fun {
@@ -364,14 +364,11 @@ func (fun *Fun) inject(cInstance *reflect.Value, ctx Ctx) {
 }
 
 func (fun *Fun) interceptor(method method, request *request) {
-	authorized := false
 	for _, interceptor := range method.intercepts {
-		authorized = interceptor(request.state)
-		if authorized {
+		if interceptor(request.state) == nil {
 			break
+		} else {
+			panic(interceptor(request.state))
 		}
-	}
-	if !authorized && len(method.intercepts) != 0 {
-		panic(Result{Status: PermissionError})
 	}
 }
