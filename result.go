@@ -5,6 +5,7 @@ const (
 	CellError
 	ReturnError
 	CloseError
+	PermissionError
 )
 
 type Result struct {

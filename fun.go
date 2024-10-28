@@ -3,6 +3,7 @@ package fun
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/chiyikj/fun/util"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -216,6 +217,7 @@ func (fun *Fun) cellMethod(ctx Ctx, method method, data *reflect.Value, request 
 		argumentsList = append(argumentsList, reflect.ValueOf(ctx.Close))
 	}
 	result = resultSuccess(methodValue.Call(argumentsList)[0].Interface())
+	fmt.Println(result)
 	if method.onType == nil || result.Data != nil {
 		panic(result)
 	}
@@ -369,6 +371,6 @@ func (fun *Fun) interceptor(method method, request *request) {
 		}
 	}
 	if !authorized && len(method.intercepts) != 0 {
-		panic("fun: Lack of operation permission")
+		panic(Result{Status: PermissionError})
 	}
 }
