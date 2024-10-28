@@ -90,7 +90,7 @@ func (fun *Fun) Check(key string, checkFunc checkFunc) {
 // Bind 绑定服务
 func (fun *Fun) Bind(service any, intercepts ...interceptFunc) {
 	serviceType := reflect.TypeOf(service)
-	if IsStruct(serviceType.Kind()) {
+	if IsStruct(serviceType) {
 		//判断结构体属性是否合法
 		checkCtx(serviceType, fun)
 		// 判断结构体方法是否合法
