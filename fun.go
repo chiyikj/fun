@@ -129,9 +129,6 @@ func (fun *Fun) OnClose(callback func(id string)) {
 // Inject 依赖注入
 func (fun *Fun) Inject(target any) {
 	t := reflect.TypeOf(target)
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
 	if t.Kind() != reflect.Struct {
 		panic("fun:target is not struct and Must be public")
 	}
