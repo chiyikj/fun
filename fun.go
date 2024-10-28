@@ -154,7 +154,6 @@ func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id strin
 		if *timer != nil {
 			(*timer).Stop()
 		}
-		fmt.Println(id)
 		if fun.closeFunc != nil {
 			fun.closeFunc(id)
 		}
