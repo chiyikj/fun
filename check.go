@@ -2,7 +2,6 @@ package fun
 
 import (
 	"reflect"
-	"unicode"
 )
 
 // 检查bind参数是否合法
@@ -52,10 +51,6 @@ func checkCtx(serviceType reflect.Type, fun *Fun) {
 			panic("fun: service Anonymous fields are not supported")
 		}
 		fieldType := field.Type
-		if !unicode.IsUpper(rune(fieldType.Name()[0])) {
-			// 字段名不是首字母大写，不符合条件
-			panic("fun: " + fieldType.Name() + " Must be public")
-		}
 		_, exists := fun.targets[fieldType]
 		if !exists {
 			panic("fun: service The type is not in the target list")
