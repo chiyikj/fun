@@ -30,8 +30,11 @@ func checkReturn(methodType reflect.Type, methodName string, method *method) {
 	if methodType.NumOut() > 1 {
 		panic("fun: The service " + methodName + " The return value can be only one")
 	}
-	if (methodType.NumOut() == 0 && isProxy) || methodType.Out(1).Kind() != reflect.Ptr {
+	if isProxy && (methodType.NumOut() == 0 || methodType.Out(0).Kind() != reflect.Ptr) {
 		panic("fun: The service " + methodName + " Is a listener that must have a return value and be of pointer type")
+	}
+	if !isProxy && methodType.NumOut() == 1 && methodType.In(0).Kind() != reflect.Struct {
+		panic("fun: The service " + methodName + " It can only be a structure")
 	}
 	if methodType.NumOut() == 1 {
 		IsJsonType(reflect.Zero(methodType.Out(0)), nil)
