@@ -103,9 +103,9 @@ func (fun *Fun) Bind(service any, intercepts ...interceptFunc) {
 			}
 			method.intercepts = intercepts
 			//检查参数
-			checkParameter(serviceType, methodName, &method, fun)
+			checkParameter(_method.Type, methodName, &method, fun)
 			//检查返回值
-			checkReturn(serviceType, methodName, &method)
+			checkReturn(_method.Type, methodName, &method)
 			fun.methods[methodName] = method
 		}
 	} else {
