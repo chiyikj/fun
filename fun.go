@@ -269,7 +269,7 @@ func (fun *Fun) handleWebSocketResponse(conn *websocket.Conn, timer **time.Timer
 func (fun *Fun) handleWebSocketRequest(timer **time.Timer, id string, ctx Ctx, request *request, conn *websocket.Conn) {
 	if request.MethodName == "ping" {
 		fun.resetTimer(timer, conn)
-		fun.send(id, "pong")
+		fun.send(id, Result{Data: "pong"})
 	} else if request.MethodName == "close" {
 		requestIdList := strings.Split(request.Id, ",")
 		for _, requestId := range requestIdList {
