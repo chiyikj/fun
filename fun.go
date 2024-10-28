@@ -260,7 +260,10 @@ func (fun *Fun) handleWebSocketRequest(timer **time.Timer, id string, ctx Ctx, r
 		fun.resetTimer(timer)
 		fun.send(id, "pong")
 	} else if request.MethodName == "close" {
-		fun.close(id, request.Dto.(string))
+		requestIdList := strings.Split(request.Id, ",")
+		for _, requestId := range requestIdList {
+			fun.close(id, requestId)
+		}
 	} else if request.Id == "" || request.MethodName == "" {
 		panic("json: cannot unmarshal number into Go value of type cyi.Request")
 	} else {
