@@ -148,10 +148,11 @@ var upgrade = websocket.Upgrader{
 
 func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id string) {
 	conn.Close()
-	if conn != nil {
+	if conn != nil && id != "" {
 		if *timer != nil {
 			(*timer).Stop()
 		}
+		fmt.Println(id)
 		if fun.closeFunc != nil {
 			fun.closeFunc(id)
 		}
@@ -169,12 +170,12 @@ func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id strin
 	}
 }
 
-func (fun *Fun) resetTimer(timer **time.Timer) {
+func (fun *Fun) resetTimer(timer **time.Timer, conn *websocket.Conn) {
 	if *timer != nil {
 		(*timer).Stop()
 	}
 	*timer = time.AfterFunc(7*time.Second, func() {
-		panic("")
+		conn.Close()
 	})
 }
 
@@ -192,7 +193,7 @@ func handleWebSocket(fun *Fun) func(w http.ResponseWriter, r *http.Request) {
 		if fun.openFunc != nil {
 			fun.openFunc(id)
 		}
-		fun.resetTimer(&timer)
+		fun.resetTimer(&timer, conn)
 		fun.connList.Store(id, ws{conn: conn, mu: &sync.Mutex{}})
 		ctx := Ctx{Ip: util.GetIp(r), Id: id, Send: fun.sender, Close: fun.close, fun: fun}
 		for {
@@ -217,7 +218,6 @@ func (fun *Fun) cellMethod(ctx Ctx, method method, data *reflect.Value, request 
 		argumentsList = append(argumentsList, reflect.ValueOf(ctx.Close))
 	}
 	result = resultSuccess(methodValue.Call(argumentsList)[0].Interface())
-	fmt.Println(result)
 	if method.onType == nil || result.Data != nil {
 		panic(result)
 	}
@@ -236,7 +236,7 @@ func (fun *Fun) send(id string, text any) bool {
 
 func (fun *Fun) returnData(request *request, id string, err any) {
 	var result Result
-	if _err, ok := err.(Result); !ok {
+	if _err, ok := err.(Result); ok {
 		result = _err
 	} else {
 		result = resultCallError(err)
@@ -261,13 +261,13 @@ func (fun *Fun) handleWebSocketResponse(conn *websocket.Conn, timer **time.Timer
 		}
 		panic(err.Error())
 	}
-	fun.handleWebSocketRequest(timer, id, ctx, request)
+	fun.handleWebSocketRequest(timer, id, ctx, request, conn)
 	return false
 }
 
-func (fun *Fun) handleWebSocketRequest(timer **time.Timer, id string, ctx Ctx, request *request) {
+func (fun *Fun) handleWebSocketRequest(timer **time.Timer, id string, ctx Ctx, request *request, conn *websocket.Conn) {
 	if request.MethodName == "ping" {
-		fun.resetTimer(timer)
+		fun.resetTimer(timer, conn)
 		fun.send(id, "pong")
 	} else if request.MethodName == "close" {
 		requestIdList := strings.Split(request.Id, ",")

@@ -38,8 +38,10 @@ func checkReturn(methodType reflect.Type, methodName string, method *method) {
 	}
 	if methodType.NumOut() == 1 {
 		IsJsonType(methodType.Out(0), nil)
-		returnData := methodType.Out(0)
-		method.onType = &returnData
+		if isProxy {
+			returnData := methodType.Out(0)
+			method.onType = &returnData
+		}
 	}
 }
 
