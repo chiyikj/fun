@@ -17,7 +17,7 @@ func checkParameter(methodType reflect.Type, methodName string, method *method, 
 		panic("fun: The service " + methodName + " In the case of two arguments, the first argument must be a struct and the second must be WatchClose")
 	}
 	if methodType.NumIn() == 2 && methodType.In(1).Kind() == reflect.Struct {
-		IsJsonType(reflect.Zero(methodType.In(1)), fun)
+		IsJsonType(methodType.In(1), fun)
 		dto := methodType.In(1)
 		method.dto = &dto
 	}
@@ -37,7 +37,7 @@ func checkReturn(methodType reflect.Type, methodName string, method *method) {
 		panic("fun: The service " + methodName + " It can only be a structure")
 	}
 	if methodType.NumOut() == 1 {
-		IsJsonType(reflect.Zero(methodType.Out(0)), nil)
+		IsJsonType(methodType.Out(0), nil)
 		returnData := methodType.Out(0)
 		method.onType = &returnData
 	}

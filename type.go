@@ -14,7 +14,7 @@ func IsStruct(target reflect.Type) bool {
 	return target.Kind() == reflect.Struct
 }
 
-func IsJsonType(target any, fun *Fun) {
+func IsJsonType(t reflect.Type, fun *Fun) {
 	basicTypes := map[reflect.Kind]struct{}{
 		reflect.Int:    {},
 		reflect.Int8:   {},
@@ -29,7 +29,6 @@ func IsJsonType(target any, fun *Fun) {
 		reflect.String: {},
 		reflect.Bool:   {},
 	}
-	t := reflect.TypeOf(target)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -40,7 +39,7 @@ func IsJsonType(target any, fun *Fun) {
 			// 不支持多维数组
 			panic("fun:Two-dimensional arrays are not supported")
 		}
-		IsJsonType(reflect.Zero(elemType).Interface(), nil)
+		IsJsonType(elemType, nil)
 	case reflect.Struct:
 		if !unicode.IsUpper(rune(t.Name()[0])) {
 			// 字段名不是首字母大写，不符合条件
@@ -63,7 +62,7 @@ func IsJsonType(target any, fun *Fun) {
 			}
 			// 检查字段名称的首字母是否大写
 			if unicode.IsUpper(rune(field.Name[0])) {
-				IsJsonType(reflect.Zero(fieldType), nil)
+				IsJsonType(fieldType, nil)
 			} else {
 				// 字段名不是首字母大写，不符合条件
 				panic("fun:" + field.Name + " Must be public")
