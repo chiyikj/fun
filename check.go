@@ -34,8 +34,8 @@ func checkReturn(methodType reflect.Type, methodName string, method *method) {
 		panic("fun: The service " + methodName + " Is a listener that must have a return value and be of pointer type")
 	}
 	if methodType.NumOut() == 1 {
-		IsJsonType(reflect.Zero(methodType.Out(1)), nil)
-		returnData := methodType.Out(1)
+		IsJsonType(reflect.Zero(methodType.Out(0)), nil)
+		returnData := methodType.Out(0)
 		method.onType = &returnData
 	}
 }
