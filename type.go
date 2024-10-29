@@ -83,49 +83,50 @@ func isMapToStruct(dto reflect.Type, value1 reflect.Value, _map map[string]any, 
 		fieldType := field.Type
 		var t = fieldType
 		value, ok := _map[field.Name]
+		if !ok {
+			panic("fun:" + field.Name + " not  found")
+		}
 		if fieldType.Kind() != reflect.Ptr {
-			t = t.Elem()
-			if !ok || value == nil {
+			if value == nil {
 				panic("fun:" + field.Name + " not  found")
 			}
+		} else {
+			t = t.Elem()
 		}
-		if t.Kind() == reflect.Slice {
-			//目标类型
-			elemType := t.Elem()
-			t = fieldType
-			if elemType.Kind() != reflect.Ptr {
-				t = t.Elem()
-			}
-			mapValue, ok := _map[field.Name]
-			if ok {
-				sliceValue := mapValue.([]interface{})
-				for _, item := range sliceValue {
-					//非指针类型却传了一个空
-					if elemType.Kind() != reflect.Ptr && sliceValue == nil {
-						panic("fun:" + field.Name + " Non-pointer type with a nil value. This is not allowed.")
-					}
-					if t.Kind() == reflect.Struct {
-						itemMap := item.(map[string]interface{})
-						isMapToStruct(t, value1, itemMap, fun)
+		if value != nil {
+			if t.Kind() == reflect.Slice {
+				//目标类型
+				elemType := t.Elem()
+				t = fieldType
+				if elemType.Kind() != reflect.Ptr {
+					t = t.Elem()
+				}
+				mapValue, ok := _map[field.Name]
+				if ok {
+					sliceValue := mapValue.([]interface{})
+					for _, item := range sliceValue {
+						//非指针类型却传了一个空
+						if elemType.Kind() != reflect.Ptr && sliceValue == nil {
+							panic("fun:" + field.Name + " Non-pointer type with a nil value. This is not allowed.")
+						}
+						if t.Kind() == reflect.Struct {
+							itemMap := item.(map[string]interface{})
+							isMapToStruct(t, value1, itemMap, fun)
+						}
 					}
 				}
-			}
-		} else if t.Kind() == reflect.Struct {
-			mapValue, ok := _map[field.Name]
-			if ok {
-				structMap := mapValue.(map[string]interface{})
+			} else if t.Kind() == reflect.Struct {
+				structMap := value.(map[string]interface{})
 				isMapToStruct(t, value1, structMap, fun)
 			}
 		}
-		if !ok || value == nil {
-			tag := field.Tag.Get("fun")
-			parts := strings.Split(tag, ",")
-			for _, part := range parts {
-				kv := strings.Split(part, ":")
-				value := fun.checkList[kv[0]](fieldType, value1.Field(i).Interface(), kv[1])
-				if value != nil {
-					panic(value)
-				}
+		tag := field.Tag.Get("fun")
+		parts := strings.Split(tag, ",")
+		for _, part := range parts {
+			kv := strings.Split(part, ":")
+			value := fun.checkList[kv[0]](fieldType, value1.Field(i).Interface(), kv[1])
+			if value != nil {
+				panic(value)
 			}
 		}
 	}
