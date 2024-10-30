@@ -330,6 +330,9 @@ func (fun *Fun) handleOtherRequests(ctx Ctx, request *request) {
 		isMapToStruct(*method.dto, newStruct, dto, fun)
 		fun.cellMethod(ctx, method, &newStruct, request)
 	} else {
+		if request.Dto != nil {
+			panic("fun: Redundant parameter")
+		}
 		fun.cellMethod(ctx, method, nil, request)
 	}
 }
