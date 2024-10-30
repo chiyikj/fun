@@ -38,7 +38,7 @@ const (
 type request struct {
 	Id         string
 	MethodName string
-	Dto        map[string]any
+	Dto        any
 	state      map[string]any
 	MethodType int8
 }
@@ -323,7 +323,11 @@ func (fun *Fun) handleOtherRequests(ctx Ctx, request *request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		isMapToStruct(*method.dto, newStruct, request.Dto, fun)
+		dto, err1 := request.Dto.(map[string]any)
+		if !err1 {
+			panic("fun: A dto is not a map")
+		}
+		isMapToStruct(*method.dto, newStruct, dto, fun)
 		fun.cellMethod(ctx, method, &newStruct, request)
 	} else {
 		fun.cellMethod(ctx, method, nil, request)
