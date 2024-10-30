@@ -93,7 +93,11 @@ func (fun *Fun) Check(key string, checkFunc checkFunc) {
 // Bind 绑定服务
 func (fun *Fun) Bind(service any, intercepts ...interceptFunc) {
 	serviceType := reflect.TypeOf(service)
-	if IsStruct(serviceType) {
+	if serviceType.Kind() == reflect.Struct {
+		if !unicode.IsUpper(rune(serviceType.Name()[0])) {
+			// 字段名不是首字母大写，不符合条件
+			panic("fun:" + serviceType.Name() + " Must be public")
+		}
 		//判断结构体属性是否合法
 		checkCtx(serviceType, fun)
 		// 判断结构体方法是否合法
@@ -129,6 +133,9 @@ func (fun *Fun) OnClose(callback func(id string)) {
 // Inject 依赖注入
 func (fun *Fun) Inject(target any) {
 	t := reflect.TypeOf(target)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
 	if t.Kind() != reflect.Struct {
 		panic("fun:target is not struct and Must be public")
 	}

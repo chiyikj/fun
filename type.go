@@ -6,14 +6,6 @@ import (
 	"unicode"
 )
 
-func IsStruct(target reflect.Type) bool {
-	if !unicode.IsUpper(rune(target.Name()[0])) {
-		// 字段名不是首字母大写，不符合条件
-		panic("fun:" + target.Name() + " Must be public")
-	}
-	return target.Kind() == reflect.Struct
-}
-
 func IsJsonType(t reflect.Type, fun *Fun) {
 	basicTypes := map[reflect.Kind]struct{}{
 		reflect.Int:    {},
