@@ -15,7 +15,7 @@ func checkParameter(methodType reflect.Type, methodName string, method *method, 
 	if methodType.NumIn() == 3 && (methodType.In(1).Kind() != reflect.Struct && methodType.In(2).Kind() != reflect.TypeOf(WatchClose(nil)).Kind()) {
 		panic("fun: The service " + methodName + " In the case of two arguments, the first argument must be a struct and the second must be WatchClose")
 	}
-	if methodType.In(1).Kind() == reflect.Struct {
+	if methodType.NumIn() > 1 && methodType.In(1).Kind() == reflect.Struct {
 		IsJsonType(methodType.In(1), fun)
 		dto := methodType.In(1)
 		method.dto = &dto
