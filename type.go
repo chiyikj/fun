@@ -41,14 +41,17 @@ func IsJsonType(t reflect.Type, fun *Fun) {
 			field := t.Field(i)
 			fieldType := field.Type
 			//检查枚举
+
 			if fun != nil {
 				tag := field.Tag.Get("fun")
-				parts := strings.Split(tag, ",")
-				for _, part := range parts {
-					kv := strings.Split(part, ":")
-					if fun.checkList[kv[0]] == nil {
-						//枚举不存在
-						panic("fun:" + kv[0] + " The authentication rule does not exist")
+				if field.Tag.Get("fun") != "" {
+					parts := strings.Split(tag, ",")
+					for _, part := range parts {
+						kv := strings.Split(part, ":")
+						if fun.checkList[kv[0]] == nil {
+							//枚举不存在
+							panic("fun:" + kv[0] + " The authentication rule does not exist")
+						}
 					}
 				}
 			}

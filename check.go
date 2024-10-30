@@ -9,13 +9,13 @@ func checkParameter(methodType reflect.Type, methodName string, method *method, 
 	if methodType.NumIn() > 3 {
 		panic("fun: The service " + methodName + " There can be only two parameters")
 	}
-	if methodType.NumIn() == 2 && (methodType.In(1).Kind() != reflect.Struct || methodType.In(1).Kind() != reflect.TypeOf(WatchClose(nil)).Kind()) {
+	if methodType.NumIn() == 2 && (methodType.In(1).Kind() != reflect.Struct && methodType.In(1).Kind() != reflect.TypeOf(WatchClose(nil)).Kind()) {
 		panic("fun: The service " + methodName + " In the case of one parameter it must be a structure or WatchClose")
 	}
 	if methodType.NumIn() == 3 && (methodType.In(1).Kind() != reflect.Struct && methodType.In(2).Kind() != reflect.TypeOf(WatchClose(nil)).Kind()) {
 		panic("fun: The service " + methodName + " In the case of two arguments, the first argument must be a struct and the second must be WatchClose")
 	}
-	if methodType.NumIn() == 2 && methodType.In(1).Kind() == reflect.Struct {
+	if methodType.In(1).Kind() == reflect.Struct {
 		IsJsonType(methodType.In(1), fun)
 		dto := methodType.In(1)
 		method.dto = &dto
@@ -24,8 +24,8 @@ func checkParameter(methodType reflect.Type, methodName string, method *method, 
 
 // 检查返回值
 func checkReturn(methodType reflect.Type, methodName string, method *method) {
-	isProxy := (methodType.NumIn() == 2 && methodType.In(1).Kind() != reflect.TypeOf(WatchClose(nil)).Kind()) ||
-		(methodType.NumIn() == 3 && methodType.In(2).Kind() != reflect.TypeOf(WatchClose(nil)).Kind())
+	isProxy := (methodType.NumIn() == 2 && methodType.In(1).Kind() == reflect.TypeOf(WatchClose(nil)).Kind()) ||
+		(methodType.NumIn() == 3 && methodType.In(2).Kind() == reflect.TypeOf(WatchClose(nil)).Kind())
 	if methodType.NumOut() > 1 {
 		panic("fun: The service " + methodName + " The return value can be only one")
 	}
