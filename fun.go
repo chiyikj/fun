@@ -38,7 +38,7 @@ const (
 type request struct {
 	Id         string
 	MethodName string
-	Dto        any
+	Dto        map[string]any
 	state      map[string]any
 	MethodType int8
 }
@@ -217,7 +217,7 @@ func (fun *Fun) cellMethod(ctx Ctx, method method, data *reflect.Value, request 
 	var result Result
 	var argumentsList []reflect.Value
 	if method.dto != nil {
-		argumentsList = append(argumentsList, *data)
+		argumentsList = append(argumentsList, data.Elem())
 	}
 	if method.onType != nil {
 		argumentsList = append(argumentsList, reflect.ValueOf(ctx.Close))
@@ -266,7 +266,8 @@ func (fun *Fun) handleWebSocketResponse(conn *websocket.Conn, timer **time.Timer
 	}()
 	if err != nil {
 		var syntaxError *json.SyntaxError
-		if !errors.As(err, &syntaxError) {
+		var UnmarshalTypeError *json.UnmarshalTypeError
+		if !errors.As(err, &syntaxError) && !errors.As(err, &UnmarshalTypeError) {
 			return true
 		}
 		panic(err.Error())
@@ -322,7 +323,7 @@ func (fun *Fun) handleOtherRequests(ctx Ctx, request *request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		isMapToStruct(*method.dto, newStruct, request.Dto.(map[string]any), fun)
+		isMapToStruct(*method.dto, newStruct, request.Dto, fun)
 		fun.cellMethod(ctx, method, &newStruct, request)
 	} else {
 		fun.cellMethod(ctx, method, nil, request)

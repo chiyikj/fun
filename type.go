@@ -116,12 +116,14 @@ func isMapToStruct(dto reflect.Type, value1 reflect.Value, _map map[string]any, 
 			}
 		}
 		tag := field.Tag.Get("fun")
-		parts := strings.Split(tag, ",")
-		for _, part := range parts {
-			kv := strings.Split(part, ":")
-			value := fun.checkList[kv[0]](fieldType, value1.Field(i).Interface(), kv[1])
-			if value != nil {
-				panic(value)
+		if field.Tag.Get("fun") != "" {
+			parts := strings.Split(tag, ",")
+			for _, part := range parts {
+				kv := strings.Split(part, ":")
+				value := fun.checkList[kv[0]](fieldType, value1.Field(i).Interface(), kv[1])
+				if value != nil {
+					panic(value)
+				}
 			}
 		}
 	}
