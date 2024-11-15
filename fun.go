@@ -226,7 +226,7 @@ func (fun *Fun) cellMethod(ctx Ctx, method method, data *reflect.Value, request 
 	if len(values) == 0 {
 		result = resultSuccess(nil)
 	} else {
-		result = resultSuccess(methodValue.Call(argumentsList)[0].Interface())
+		result = resultSuccess(values[0].Interface())
 	}
 	if method.onType == nil || result.Data != nil {
 		panic(result)

@@ -2,6 +2,7 @@ package fun
 
 import (
 	"reflect"
+	"unicode"
 )
 
 // 检查bind参数是否合法
@@ -51,6 +52,9 @@ func checkCtx(serviceType reflect.Type, fun *Fun) {
 		_, exists := fun.targets[fieldType]
 		if !exists {
 			panic("fun: service The type is not in the target list")
+		}
+		if !unicode.IsUpper(rune(field.Name[0])) {
+			panic("fun:" + field.Name + " Must be public")
 		}
 	}
 }
