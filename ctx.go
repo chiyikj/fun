@@ -3,7 +3,7 @@ package fun
 type Ctx struct {
 	Ip         string
 	Id         string
-	state      map[string]any
+	State      map[string]any
 	RequestId  string
 	MethodName string
 	Send       func(id string, requestId string, data any) bool
