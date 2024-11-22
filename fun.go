@@ -302,7 +302,7 @@ func (fun *Fun) handleOtherRequests(ctx Ctx, request *request) {
 	if request.MethodType == proxy && method.onType == nil {
 		panic("fun: The type of request is not a listener pattern")
 	}
-	ctx.state = request.state
+	ctx.State = request.state
 	ctx.MethodName = request.MethodName
 	ctx.RequestId = request.Id
 	if method.onType != nil {

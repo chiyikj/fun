@@ -77,10 +77,7 @@ func isMapToStruct(dto reflect.Type, value1 reflect.Value, _map map[string]any, 
 		field := dto.Field(i)
 		fieldType := field.Type
 		var t = fieldType
-		value, ok := _map[field.Name]
-		if !ok {
-			panic("fun:" + field.Name + " not  found")
-		}
+		value, _ := _map[field.Name]
 		if fieldType.Kind() != reflect.Ptr {
 			if value == nil {
 				panic("fun:" + field.Name + " not  found")
