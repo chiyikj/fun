@@ -1,7 +1,5 @@
 namespace fun.dataType.Service;
 
-
-
 public enum ResultStatusEnum
 {
     Success,

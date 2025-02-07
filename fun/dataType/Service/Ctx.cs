@@ -1,9 +1,9 @@
-namespace fun;
+namespace fun.dataType.Service;
 
-public class Ctx 
+public class Ctx
 {
-    public  string? Id { get; set; }
+    public required string Id;
     public required string Ip;
-    public Dictionary<string, object> state;
+    public required Dictionary<string, object> State;
 }
 

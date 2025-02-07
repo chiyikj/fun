@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
+using fun.dataType.Attribute.Service;
 using fun.dataType.Service;
 public class Fun {
     private Dictionary<string, ServiceMethod> ServiceMethodMap = new Dictionary<string, ServiceMethod>();
@@ -50,9 +51,11 @@ public class Fun {
         if (!service.IsSubclassOf(typeof(Ctx))) {
             throw new ApplicationException("Service is not a subclass of Ctx");
         }
-        ServiceMethod serviceMethod = new ServiceMethod();
+        ServiceMethod serviceMethod = new ServiceMethod
+        {
+            ServiceType = service,
+        };
         ServiceMethodMap.Add(service.Name, serviceMethod);
-        serviceMethod.serviceType = service;
         foreach (var method in service.GetMethods()) {
             addMethod(serviceMethod,method);
         }

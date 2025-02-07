@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using fun;
 using fun.dataType.Service;
+using fun.dataType.Attribute.Service;
 
 Fun fun = new Fun();
 await fun.Run(3000);
