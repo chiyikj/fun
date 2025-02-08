@@ -4,9 +4,10 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using fun.dataType.Attribute.Service;
+using fun.dataType.Attribute.Bean;
 using fun.dataType.Service;
 public class Fun {
-    private Dictionary<string, ServiceMethod> ServiceMethodMap = new Dictionary<string, ServiceMethod>();
+    private Dictionary<string, ServiceMethod> _serviceMethodMap = new Dictionary<string, ServiceMethod>();
     private  HttpListener _listener =  new HttpListener();
     private  CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     public async Task Run(ushort port) {
@@ -40,14 +41,14 @@ public class Fun {
         foreach (var item in classes)
         {
             if (item.GetCustomAttribute<Service>() != null) {
-                addService(item);
+                AddService(item);
             } else if (item.GetCustomAttribute<Bean>() != null) {
 
             }
         }
     }
 
-    private void addService(Type service) {
+    private void AddService(Type service) {
         if (!service.IsSubclassOf(typeof(Ctx))) {
             throw new ApplicationException("Service is not a subclass of Ctx");
         }
@@ -55,20 +56,20 @@ public class Fun {
         {
             ServiceType = service,
         };
-        ServiceMethodMap.Add(service.Name, serviceMethod);
+        _serviceMethodMap.Add(service.Name, serviceMethod);
         foreach (var method in service.GetMethods()) {
-            addMethod(serviceMethod,method);
+            AddMethod(serviceMethod,method);
         }
     }
 
-    private void addMethod(ServiceMethod serviceMethod,MethodInfo method)
+    private void AddMethod(ServiceMethod serviceMethod,MethodInfo method)
     {
         string[] systemMethods = { "GetType", "ToString", "Equals", "GetHashCode" };
         if (!systemMethods.Contains(method.Name)) {
             if (method.GetParameters().Length > 1) {
                 throw new ApplicationException("Method parameter count is more than 1");
             }
-            serviceMethod.methodMap.Add(method.Name, method);
+            serviceMethod.MethodMap.Add(method.Name, method);
         }
     }
     private async Task AcceptWebSocketAsync(HttpListenerContext context) {

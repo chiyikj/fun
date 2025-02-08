@@ -2,7 +2,7 @@
 
 using fun.dataType.Service;
 using fun.dataType.Attribute.Service;
-
+using fun;
 Fun fun = new Fun();
 await fun.Run(3000);
 
@@ -15,7 +15,7 @@ class MyClass1:Ctx
 [Service]
 class MyClass:Ctx
 {
-    public async Task<int> add(int a)
+    public  int Add(int a)
     {
         return a;
     }

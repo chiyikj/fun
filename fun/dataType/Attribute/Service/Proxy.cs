@@ -1,11 +1,12 @@
-namespace fun.dataType.Service;
+namespace fun.dataType.Attribute.Service;
+using System;
 
+    
 public class Proxy : Attribute
 {
-    public Type type;
-
+    private Type _type;
     public Proxy(Type type)
     {
-        this.type = type;
+        _type = type;
     }
 }

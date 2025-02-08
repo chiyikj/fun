@@ -1,6 +1,6 @@
-namespace fun;
+namespace fun.dataType.Bean;
 
-public enum BeanType
+public enum BeanEnum
 {
     Single,
     Connect,

@@ -32,6 +32,4 @@ public class Result
             Status = ResultStatusEnum.CellError
         };
     }
-
 }
-
