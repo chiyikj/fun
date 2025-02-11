@@ -9,14 +9,12 @@ using fun.dataType.Service;
 public class Fun {
     private Dictionary<string, ServiceMethod> _serviceMethodMap = new Dictionary<string, ServiceMethod>();
     private  HttpListener _listener =  new HttpListener();
-    private  CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     public async Task Run(ushort port) {
         Scan();
         _listener.Prefixes.Add($"http://*:{port}/");
         _listener.Start();
         Console.WriteLine("WebSocket Server Started...");
-
-        while (!_cancellationTokenSource.Token.IsCancellationRequested) {
+        while (true) {
             var ctx = await _listener.GetContextAsync();
             if (ctx.Request.IsWebSocketRequest)
             {
@@ -30,8 +28,6 @@ public class Fun {
                 ctx.Response.Close();
             }
         }
-        _listener.Stop();
-        Console.WriteLine("WebSocket Server stopped...");
     }
 
     private void Scan() {
@@ -78,10 +74,10 @@ public class Fun {
         var buffer = new byte[1024 * 4]; // 固定大小的缓冲区用于接收每个数据段
         var messageParts = new List<ArraySegment<byte>>();
         while (webSocket.State == WebSocketState.Open) {
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancellationTokenSource.Token);
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer),CancellationToken.None);
 
             if (result.MessageType == WebSocketMessageType.Close) {
-                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by client", _cancellationTokenSource.Token);
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by client", CancellationToken.None);
                 break;
             }
             if (result.MessageType == WebSocketMessageType.Text) {
@@ -96,7 +92,7 @@ public class Fun {
                     Console.WriteLine("Message size: " + completeMessageBuffer.Length + " bytes");
 
                     // 将消息原样发送回客户端
-                    await webSocket.SendAsync(new ArraySegment<byte>(completeMessageBuffer), result.MessageType, result.EndOfMessage, _cancellationTokenSource.Token);
+                    await webSocket.SendAsync(new ArraySegment<byte>(completeMessageBuffer), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                     // 清空消息部分列表，准备接收下一个消息
                     messageParts.Clear();
