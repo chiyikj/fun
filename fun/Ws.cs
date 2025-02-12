@@ -68,25 +68,25 @@ public class Ws
             {
                 // 将所有消息部分合并成一个完整的消息
                 var completeMessageBuffer = CombineSegments(_messageParts);
-                var message = Encoding.UTF8.GetString(completeMessageBuffer);
-                if (message.Equals("0"))
-                {
-                    _cts.Cancel();
-                    _cts.Dispose();
-                    _cts = new CancellationTokenSource();
-                    await WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes("1")), WebSocketMessageType.Text, true, CancellationToken.None);
-                    new DelayExample().ExecuteWithDelayAsync(WebSocket, 7000, _cts.Token);
-                    return null;
-                }
-                else
-                {
-                    await WebSocket.SendAsync(new ArraySegment<byte>(completeMessageBuffer), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                }
                 _messageParts.Clear();
-                return message;
+                var message = Encoding.UTF8.GetString(completeMessageBuffer);
+                if (!message.Equals("0"))
+                {
+                    return message;
+                }
+                _cts.Cancel();
+                _cts.Dispose();
+                _cts = new CancellationTokenSource();
+                await Send("1");
+                new DelayExample().ExecuteWithDelayAsync(WebSocket, 7000, _cts.Token);
             }
         }
         return null;
+    }
+
+    public async Task Send(String message)
+    {
+        await WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
     }
     
     public async Task<String> GetMessage()
