@@ -46,7 +46,7 @@ public class Ws
     {
         _cts = new CancellationTokenSource();
         _messageParts = new List<ArraySegment<byte>>();
-        new DelayExample().ExecuteWithDelayAsync(WebSocket, 2000, _cts.Token);
+        ExecuteWithDelayAsync(WebSocket, 2000, _cts.Token);
     }
     public async Task<String> GetMessage1()
     {
@@ -54,7 +54,7 @@ public class Ws
         if (result.MessageType == WebSocketMessageType.Close)
         {
             Console.WriteLine("Client closed the WebSocket connection.");
-            if (WebSocket.State == WebSocketState.Open)await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", CancellationToken.None);
+            if (WebSocket.State == WebSocketState.Open) await Close();
             Ctx.Response.Close();
             throw new WebSocketException("WebSocket connection closed.");
         }
@@ -78,12 +78,18 @@ public class Ws
                 _cts.Dispose();
                 _cts = new CancellationTokenSource();
                 await Send("1");
-                new DelayExample().ExecuteWithDelayAsync(WebSocket, 7000, _cts.Token);
+                ExecuteWithDelayAsync(WebSocket, 7000, _cts.Token);
             }
         }
         return null;
     }
 
+    public async Task Close()
+    {
+        await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server",
+            CancellationToken.None);
+    }
+    
     public async Task Send(String message)
     {
         await WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -112,14 +118,10 @@ public class Ws
 
         return completeBuffer;
     }
-
-}
-
-internal class DelayExample
-{
-    public async Task ExecuteWithDelayAsync(WebSocket websocket, ushort delayTime, CancellationToken cancellationToken)
+    internal  async Task ExecuteWithDelayAsync(WebSocket websocket, ushort delayTime, CancellationToken cancellationToken)
     {
         await Task.Delay(delayTime, cancellationToken);
-        await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", cancellationToken);
+        await Close();
     }
 }
+
