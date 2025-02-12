@@ -22,8 +22,16 @@ public class Fun
             var ws = await Complex.GetConnect();
             while (true)
             {
-                var message = await ws.GetMessage();
-                Console.WriteLine(message);
+                try
+                {
+                    var message = await ws.GetMessage();
+                    Console.WriteLine(message); 
+                }
+                catch 
+                {   
+                    break;  
+                }
+                
             }
         }
     }
