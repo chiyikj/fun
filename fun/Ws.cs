@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 namespace fun;
 using System.Net;
+using System.Text.Json;
 public class Complex1
 {
     private readonly HttpListener _listener = new();
@@ -77,7 +78,7 @@ public class Ws
                 _cts.Cancel();
                 _cts.Dispose();
                 _cts = new CancellationTokenSource();
-                await Send("1");
+                await Send(1);
                 ExecuteWithDelayAsync(WebSocket, 7000, _cts.Token);
             }
         }
@@ -90,9 +91,9 @@ public class Ws
             CancellationToken.None);
     }
     
-    public async Task Send(String message)
+    public async Task Send(Object message)
     {
-        await WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
+        await WebSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message))), WebSocketMessageType.Text, true, CancellationToken.None);
     }
     
     public async Task<String> GetMessage()
