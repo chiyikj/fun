@@ -1,10 +1,10 @@
 namespace fun.dataType.Service;
 public class Result
 {
-    public string Id = "";
-    public ushort? Code;
-    public required object Data;
-    public ResultStatusEnum Status;
+    public string Id { get; set; }
+    public ushort? Code{ get; set; }
+    public  object Data{ get; set; }
+    public ResultStatusEnum Status{ get; set; }
     public static Result Success(object data)
     {
         return new Result

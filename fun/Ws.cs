@@ -1,5 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
+using fun.dataType.Service;
+
 namespace fun;
 using System.Net;
 using System.Text.Json;

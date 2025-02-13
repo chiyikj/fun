@@ -17,21 +17,27 @@ public class Fun
         Scan();
         Complex = new Complex1(port);
         Console.WriteLine("WebSocket Server Started...");
+        ThreadPool.SetMaxThreads(Environment.ProcessorCount,Environment.ProcessorCount);
         while (true)
         {
             var ws = await Complex.GetConnect();
-            while (true)
+            ThreadPool.QueueUserWorkItem(o => ThreadNodeOne(ws));
+        }
+    }
+    
+    private async Task ThreadNodeOne(Ws ws)
+    {
+        while (true)
+        {
+            try
             {
-                try
-                {
-                    var message = await ws.GetMessage();
-                    Console.WriteLine(message); 
-                }
-                catch 
-                {   
-                    break;  
-                }
-                
+                var message = await ws.GetMessage();
+                ws.Send(Result.Success("1111"));
+                Console.WriteLine(message); 
+            }
+            catch 
+            {   
+                break;  
             }
         }
     }
