@@ -9,23 +9,23 @@ namespace fun;
 
 public class Fun
 {
-    private  Complex1 Complex ;
-    private readonly Dictionary<string, ServiceMethod> _serviceMethodMap = new();
+    private  Connect _connect ;
+    private  Dictionary<string, ServiceMethod> _serviceMethodMap = new();
 
     public async Task Run(ushort port)
     {
         Scan();
-        Complex = new Complex1(port);
+        _connect = new Connect(port);
         Console.WriteLine("WebSocket Server Started...");
         ThreadPool.SetMaxThreads(Environment.ProcessorCount,Environment.ProcessorCount);
         while (true)
         {
-            var ws = await Complex.GetConnect();
-            ThreadPool.QueueUserWorkItem(o => ThreadNodeOne(ws));
+            var ws = await _connect.GetConnect();
+            ThreadPool.QueueUserWorkItem(o => GetMessage(ws));
         }
     }
     
-    private async Task ThreadNodeOne(Ws ws)
+    private async Task GetMessage(Ws ws)
     {
         while (true)
         {
