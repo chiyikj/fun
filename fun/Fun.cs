@@ -32,7 +32,7 @@ public class Fun
             try
             {
                 var message = await ws.GetMessage();
-                ws.Send(Result.Success("1111"));
+                await ws.Send(Result.Success("1111"));
                 Console.WriteLine(message); 
             }
             catch 

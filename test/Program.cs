@@ -3,7 +3,10 @@
 using fun.dataType.Service;
 using fun.dataType.Attribute.Service;
 using fun;
+using System.Reflection;
 Fun fun = new Fun();
+String a = "Hello World";
+Console.WriteLine(a.GetType());
 await fun.Run(3000);
 
 [Service]
@@ -19,4 +22,10 @@ class MyClass:Ctx
     {
         return a;
     }
+}
+
+
+class anotherClass<T>
+{
+    public T A;
 }
