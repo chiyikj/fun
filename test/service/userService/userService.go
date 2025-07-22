@@ -14,7 +14,7 @@ type UserService struct {
 type User struct {
 	User   string
 	Name   *string
-	Config *Dependency.Config
+	Config *[]Dependency.Config
 }
 
 func (ctx UserService) HalloWord(user User) *int8 {

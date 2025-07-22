@@ -195,6 +195,10 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 		if fieldType.Kind() == reflect.Struct {
 			nestedImports = append(nestedImports, genStruct(fieldType, visitedPaths))
 		}
+
+		if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.Struct {
+			nestedImports = append(nestedImports, genStruct(fieldType.Elem(), visitedPaths))
+		}
 	}
 
 	// 去重并计算相对路径
