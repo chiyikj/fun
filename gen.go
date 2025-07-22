@@ -178,15 +178,16 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 		field := t.Field(i)
 		fieldType := field.Type
 
+		jsType := typeToJsType(fieldType)
+		name := field.Name
 		// 解引用指针
 		if fieldType.Kind() == reflect.Ptr {
 			fieldType = fieldType.Elem()
+			name += "?"
 		}
-
 		// 生成字段类型并添加到模板
-		jsType := typeToJsType(fieldType)
 		structTemplate.GenClassFieldType = append(structTemplate.GenClassFieldType, &genClassFieldType{
-			Name: field.Name,
+			Name: name,
 			Type: jsType,
 		})
 

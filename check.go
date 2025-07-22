@@ -161,14 +161,14 @@ func checkDto(dto *reflect.Type, dtoMap any) {
 		for i := 0; i < dtoType.NumField(); i++ {
 			f := dtoType.Field(i)
 			value, ok := dtoMap.(map[string]any)[f.Name]
-			if f.Type.Kind() != reflect.Ptr && !ok {
+			if f.Type.Kind() != reflect.Ptr && (!ok || value == nil) {
 				panic("Fun:" + f.Name + " Dto must be a pointer or have a corresponding field in the map")
 			}
 			t := f.Type
 			if t.Kind() == reflect.Ptr {
 				t = t.Elem()
 			}
-			if t.Kind() == reflect.Struct || t.Kind() == reflect.Slice {
+			if (t.Kind() == reflect.Struct || t.Kind() == reflect.Slice) && value != nil {
 				checkDto(&t, value)
 			}
 		}
@@ -182,7 +182,7 @@ func checkDto(dto *reflect.Type, dtoMap any) {
 			if t.Kind() == reflect.Ptr {
 				t = t.Elem()
 			}
-			if t.Kind() == reflect.Struct || t.Kind() == reflect.Slice {
+			if (t.Kind() == reflect.Struct || t.Kind() == reflect.Slice) && value != nil {
 				checkDto(&t, value)
 			}
 		}

@@ -16,7 +16,7 @@ export class defaultApi extends client {
 export default class fun {
   static defaultApi: defaultApi | null = null
 
-  static create(url: string): client {
+  static create(url: string): defaultApi {
     this.defaultApi = this.defaultApi ? this.defaultApi : new defaultApi (url);
     return this.defaultApi;
   }

@@ -13,11 +13,11 @@ type UserServiceTest struct {
 
 func (ctx UserServiceTest) HalloWord() {
 	request := fun.GetRequestInfo(map[string]any{
-		"User": "1212",
-		"Name": "22333",
+		"User": nil,
+		"Name": "1212",
 	}, map[string]string{})
-	result := fun.MockRequest[string](fun.GetClientInfo("123456"), request)
-	fmt.Println(result)
+	reu := fun.MockRequest[*int8](fun.GetClientInfo("123456"), request)
+	fmt.Println(reu)
 }
 
 func main() {

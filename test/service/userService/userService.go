@@ -13,11 +13,11 @@ type UserService struct {
 
 type User struct {
 	User   string
-	Name   string
-	Config Dependency.Config
+	Name   *string
+	Config *Dependency.Config
 }
 
-func (ctx UserService) HalloWord() *int8 {
+func (ctx UserService) HalloWord(user User) *int8 {
 	fmt.Println(ctx.Config.Page, 22223)
 	//panic(666)
 	return nil

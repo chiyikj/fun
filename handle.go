@@ -158,9 +158,7 @@ func (fun *Fun) dto(request *RequestInfo[map[string]any], ctx *Ctx) {
 		if err := json.Unmarshal(jsonData, dto); err != nil {
 			panic(err)
 		}
-
 		checkDto(method.dto, *request.Dto)
-
 		requestData := reflect.ValueOf(dto).Elem()
 		fun.cellMethod(ctx, service, method, &requestData, request)
 	} else {
