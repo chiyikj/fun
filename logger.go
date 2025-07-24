@@ -41,7 +41,7 @@ func TraceLogger() {
 	for _, v := range a {
 		name = strings.ReplaceAll(name, v, "")
 	}
-	fmt.Println(padString("["+getCurrentTime()+"]", 22, true) + "[" + padString("DEBUG", 6, true) + "] " + name)
+	fmt.Println(padString("["+getCurrentTime()+"]", 5, true) + "[" + padString("DEBUG", 6, true) + "] " + name)
 }
 
 func DebugLogger() {
@@ -64,13 +64,10 @@ func panicLogger() {
 }
 
 func padString(str string, totalLength int, leftAlign bool) string {
-	if len(str) >= totalLength {
-		return str
-	}
-
 	if leftAlign {
-		return fmt.Sprintf("%-*s", totalLength, str) // 左对齐
+		fmt.Println(fmt.Sprintf("%-*s", totalLength, str)[0:totalLength])
+		return fmt.Sprintf("%-*s", totalLength, str)[0:totalLength] // 左对齐
 	} else {
-		return fmt.Sprintf("%*s", totalLength, str) // 右对齐
+		return fmt.Sprintf("%*s", totalLength, str)[0:totalLength] // 右对齐
 	}
 }
