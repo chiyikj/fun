@@ -24,9 +24,9 @@ const (
 type Logger struct {
 	Level          uint8
 	Mode           uint8
-	MaxSizeFile    uint8
-	MaxNumberFiles uint8
-	ExpireLogsDays uint8
+	MaxSizeFile    uint8 //文件最大大小
+	MaxNumberFiles uint8 //文件最多数量
+	ExpireLogsDays uint8 //文件保留时间
 }
 
 // 日志消息结构体
@@ -35,20 +35,47 @@ type logMessage struct {
 	message string
 }
 
+var logger *Logger = &Logger{
+	Level:          TraceLevel,
+	Mode:           TerminalMode,
+	MaxSizeFile:    0,
+	MaxNumberFiles: 0,
+	ExpireLogsDays: 0,
+}
+
 // 日志通道
 var logChan chan logMessage
 
 // 初始化日志系统
 func init() {
 	logChan = make(chan logMessage, 1000) // 创建带缓冲的通道
-	go logWorker()                        // 启动日志处理协程
+	go logWorker()
+	go deleteLogWorker() // 清理
+}
+
+func deleteLogWorker() {
+
+}
+
+func ConfigLogger(log *Logger) {
+	// 启动日志处理协程
+	logger = log
 }
 
 func logWorker() {
 	for msg := range logChan {
-		// 统一处理所有日志消息
-		fmt.Println("[" + getCurrentTime() + "] [" + getLevelName(msg.level) + "] " + msg.message)
+		text := "[" + getCurrentTime() + "] [" + padString(getLevelName(msg.level), 7) + "] " + msg.message
+		if logger.Mode == FileMode {
+			// 文件模式
+			fileLogger(text)
+		} else {
+			fmt.Println(text)
+		}
 	}
+}
+
+func fileLogger(text string) {
+
 }
 
 func getCurrentTime() string {
@@ -57,24 +84,16 @@ func getCurrentTime() string {
 
 func getMethodNameLogger() string {
 	pc, _, _, _ := runtime.Caller(3)
-	funcObj := runtime.FuncForPC(pc)
-	a := []string{"(", "*", ")"}
-	name := "[" + padString(strings.ReplaceAll(funcObj.Name(), "/", "."), 40, true) + "]"
-	for _, v := range a {
-		name = strings.ReplaceAll(name, v, "")
+	fn := runtime.FuncForPC(pc)
+	// 定义需要移除的字符
+	charsToRemove := []string{"(", "*", ")"}
+	name := fn.Name()
+	for _, char := range charsToRemove {
+		name = strings.ReplaceAll(name, char, "")
 	}
-	return name
-}
+	funcName := "[" + padString(strings.ReplaceAll(name, "/", "."), 40) + "] "
 
-func TraceLogger() {
-	pc, _, _, _ := runtime.Caller(1)
-	funcObj := runtime.FuncForPC(pc)
-	a := []string{"(", "*", ")"}
-	name := "[" + padString(strings.ReplaceAll(funcObj.Name(), "/", "."), 40, true) + "]"
-	for _, v := range a {
-		name = strings.ReplaceAll(name, v, "")
-	}
-	fmt.Println(padString("["+getCurrentTime()+"]", 5, true) + "[" + padString("DEBUG", 6, true) + "] " + name)
+	return funcName
 }
 
 func getLevelName(level uint8) string {
@@ -94,29 +113,38 @@ func getLevelName(level uint8) string {
 	}
 }
 
-func DebugLogger() {
-
-}
-
-func InfoLogger() {
-
-}
-
-func ErrorLogger() {
-
-}
-func WarnLogger() {
-
-}
-
-func panicLogger() {
-
-}
-
-func padString(str string, totalLength int, leftAlign bool) string {
-	if leftAlign {
-		return fmt.Sprintf("%-*s", totalLength, str)[0:totalLength] // 左对齐
-	} else {
-		return fmt.Sprintf("%*s", totalLength, str)[0:totalLength] // 右对齐
+func sendLogWorker(level uint8, message string) {
+	if logger.Level >= level {
+		logChan <- logMessage{
+			level:   level,
+			message: getMethodNameLogger() + message,
+		}
 	}
+}
+
+func DebugLogger(message string) {
+	sendLogWorker(DebugLevel, message)
+}
+
+func InfoLogger(message string) {
+	sendLogWorker(InfoLevel, message)
+}
+
+func TraceLogger(message string) {
+	sendLogWorker(TraceLevel, message)
+}
+
+func ErrorLogger(message string) {
+	sendLogWorker(ErrorLevel, message)
+}
+func WarnLogger(message string) {
+	sendLogWorker(WarnLevel, message)
+}
+
+func PanicLogger(message string) {
+	sendLogWorker(PanicLevel, message)
+}
+
+func padString(str string, totalLength int) string {
+	return fmt.Sprintf("%-*s", totalLength, str)[0:totalLength] // 左对齐
 }

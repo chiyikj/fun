@@ -9,7 +9,7 @@ type Tag struct {
 	TagList map[string]string
 }
 
-func NewTag(tag reflect.StructTag) *Tag {
+func newTag(tag reflect.StructTag) *Tag {
 	t := &Tag{
 		TagList: map[string]string{},
 	}

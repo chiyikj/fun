@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime"
 	"sync"
 	"time"
 
@@ -91,7 +92,10 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 		err := json.Unmarshal(*message, &request)
 		defer func() {
 			if err := recover(); err != nil {
-				fun.returnData(ctx.Id, ctx.RequestId, err)
+				stackBuf := make([]byte, 8192)
+				stackSize := runtime.Stack(stackBuf, false)
+				stackTrace := string(stackBuf[:stackSize])
+				fun.returnData(ctx.Id, request.Id, err, stackTrace)
 			}
 		}()
 		if err != nil {

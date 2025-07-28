@@ -2,10 +2,12 @@ package fun
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"reflect"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -49,6 +51,14 @@ func GetFun() *Fun {
 }
 
 func Start(addr ...uint16) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
 	err := http.ListenAndServe("127.0.0.1:"+isPort(addr), nil)
 	if err != nil {
@@ -60,34 +70,15 @@ func Gen() {
 	genDefaultService()
 }
 
-func typeToJsType(t reflect.Type) string {
-	text := ""
-	if t.Kind() == reflect.Ptr {
-		text += " | null"
-	}
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	switch t.Kind() {
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		text = "number" + text
-		break
-	case reflect.Bool:
-		text = "boolean" + text
-		break
-	case
-		reflect.String, reflect.Struct:
-		text = t.Name() + text
-		break
-	default:
-		text = typeToJsType(t.Elem()) + "[]" + text
-		break
-	}
-	return text
-}
-
 func StartTls(certFile string, keyFile string, addr ...uint16) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
 	err := http.ListenAndServeTLS("localhost:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
@@ -207,6 +198,14 @@ func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id strin
 }
 
 func BindService(service any, guardList ...Guard) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	f := GetFun()
 	t := reflect.TypeOf(service)
 	checkService(t, f)
@@ -220,23 +219,39 @@ func BindService(service any, guardList ...Guard) {
 }
 
 func BindGuard(guard Guard) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	f := GetFun()
 	checkGuard(guard)
 	guardWired(guard, f)
 }
 
-func (fun *Fun) returnData(id string, requestId string, data any) {
+func (fun *Fun) returnData(id string, requestId string, data any, stackTrace string) {
 	var result Result[any]
 	// 尝试将 data 断言为 Result 类型
-	switch value := data.(type) {
-	case Result[any]:
+	if value, ok := data.(Result[any]); ok {
 		result = value
-	case error:
-		//堆栈错误
-		result = callError(value.Error())
-	default:
-		result = callError(fmt.Sprintf("%v", data))
+		result.Id = requestId
+		jsonStr, _ := json.Marshal(result)
+		InfoLogger(string(jsonStr))
+	} else {
+		result = callError(getErrorString(data))
+		result.Id = requestId
+		ErrorLogger(getErrorString(data) + "\n" + stackTrace)
 	}
-	result.Id = requestId
 	fun.send(id, result)
+}
+
+func getErrorString(data any) string {
+	if err, ok := data.(error); ok {
+		return err.Error()
+	} else {
+		return fmt.Sprintf("%v", data)
+	}
 }

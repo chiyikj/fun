@@ -59,7 +59,7 @@ func (fun *Fun) autowired(fieldValue reflect.Value) {
 	// 遍历结构体字段，处理带有 `auto` 标签的字段
 	for i := 0; i < structValue.NumField(); i++ {
 		structField := structValue.Type().Field(i)
-		fieldTag := NewTag(structField.Tag)
+		fieldTag := newTag(structField.Tag)
 
 		// 检查是否有 "auto" 标签
 		if _, isAuto := fieldTag.GetTag("auto"); isAuto {

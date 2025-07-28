@@ -121,7 +121,7 @@ func checkBox(s reflect.StructField, boxList map[reflect.Type]bool) {
 	}
 	for i := 0; i < s.Type.Elem().NumField(); i++ {
 		f := s.Type.Elem().Field(i)
-		fieldTag := NewTag(f.Tag)
+		fieldTag := newTag(f.Tag)
 		// 检查是否有 "auto" 标签
 		if _, isAuto := fieldTag.GetTag("auto"); isAuto {
 			checkBox(f, boxList)
