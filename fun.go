@@ -67,6 +67,14 @@ func Start(addr ...uint16) {
 }
 
 func Gen() {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	genDefaultService()
 }
 

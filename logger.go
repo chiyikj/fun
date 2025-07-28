@@ -2,6 +2,7 @@ package fun
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -35,9 +36,11 @@ type logMessage struct {
 	message string
 }
 
+const logFile = "./log"
+
 var logger *Logger = &Logger{
 	Level:          TraceLevel,
-	Mode:           TerminalMode,
+	Mode:           FileMode,
 	MaxSizeFile:    0,
 	MaxNumberFiles: 0,
 	ExpireLogsDays: 0,
@@ -48,21 +51,40 @@ var logChan chan logMessage
 
 // 初始化日志系统
 func init() {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	logChan = make(chan logMessage, 1000) // 创建带缓冲的通道
 	go logWorker()
 	go deleteLogWorker() // 清理
 }
 
 func deleteLogWorker() {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 
-}
-
-func ConfigLogger(log *Logger) {
-	// 启动日志处理协程
-	logger = log
 }
 
 func logWorker() {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	for msg := range logChan {
 		text := "[" + getCurrentTime() + "] [" + padString(getLevelName(msg.level), 7) + "] " + msg.message
 		if logger.Mode == FileMode {
@@ -75,11 +97,28 @@ func logWorker() {
 }
 
 func fileLogger(text string) {
+	fullPath := logFile + "/" + getCurrentData()
+	_, err := os.Stat(fullPath)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(fullPath, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
 
+}
+
+func ConfigLogger(log *Logger) {
+	// 启动日志处理协程
+	logger = log
 }
 
 func getCurrentTime() string {
 	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func getCurrentData() string {
+	return time.Now().Format("2006-01-02")
 }
 
 func getMethodNameLogger() string {
