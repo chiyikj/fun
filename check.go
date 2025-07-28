@@ -61,8 +61,8 @@ func checkParameter(t reflect.Type, name string, method *method) bool {
 		panic("Fun: " + name + " Method cannot have more than two parameters")
 	}
 	if t.NumIn() == 3 {
-		if t.In(2) != reflect.TypeOf((ProxyClose)(nil)) {
-			panic("Fun: " + name + "  Parameter two is not WatchClose")
+		if t.In(2) != reflect.TypeOf(&Proxy{}) {
+			panic("Fun: " + name + " parameter 2 is not a Proxy and must be a pointer")
 		}
 		isProxy = true
 		if t.In(1).Kind() != reflect.Struct {
@@ -73,7 +73,7 @@ func checkParameter(t reflect.Type, name string, method *method) bool {
 		method.dto = &dtoType
 	}
 	if t.NumIn() == 2 {
-		if t.In(1) == reflect.TypeOf((ProxyClose)(nil)) {
+		if t.In(1) == reflect.TypeOf(&Proxy{}) {
 			isProxy = true
 		} else {
 			if t.In(1).Kind() != reflect.Struct {

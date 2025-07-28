@@ -1,6 +1,7 @@
 package fun
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -102,7 +103,13 @@ func (fun *Fun) close(id string, requestId string) {
 	loadConnInfo := connInfo.(connInfoType)
 	on, ok := loadConnInfo.onList.Load(requestId)
 	if ok {
-		on.(onType).callBack()
+		if on.(*Proxy).Close != nil {
+			callback := *on.(*Proxy).Close
+			callback()
+		}
+		if on.(*Proxy).Open != nil {
+			on.(*Proxy).Cancel()
+		}
 		loadConnInfo.onList.Delete(requestId)
 	}
 }
@@ -132,20 +139,10 @@ func (fun *Fun) cellMethod(ctx *Ctx, service *service, registeredMethod *method,
 	if requestData != nil {
 		args = append(args, *requestData)
 	}
+	proxy := &Proxy{}
+	proxy.Ctx, proxy.Cancel = context.WithCancel(context.Background())
 	if registeredMethod.isProxy {
-		watchClose := func(callback func()) {
-			//保存回调
-			if connInfo, ok := fun.connList.Load(ctx.Id); ok {
-				loadConnInfo := connInfo.(connInfoType)
-
-				loadConnInfo.onList.Store(ctx.RequestId, onType{
-					requestInfo.ServiceName,
-					requestInfo.MethodName,
-					callback,
-				})
-			}
-		}
-		args = append(args, reflect.ValueOf(watchClose))
+		args = append(args, reflect.ValueOf(proxy))
 	}
 
 	value := methodValue.Call(args)
@@ -153,6 +150,28 @@ func (fun *Fun) cellMethod(ctx *Ctx, service *service, registeredMethod *method,
 		result = success(nil)
 	} else {
 		result = success(value[0].Interface())
+	}
+	if registeredMethod.isProxy {
+		if proxy.Open != nil {
+			callback := *proxy.Open
+			go func() {
+				callback()
+				for {
+					select {
+					case <-proxy.Ctx.Done():
+						return
+					}
+				}
+			}()
+		}
+		if connInfo, ok := fun.connList.Load(ctx.Id); ok {
+			loadConnInfo := connInfo.(connInfoType)
+			loadConnInfo.onList.Store(ctx.RequestId, onType{
+				requestInfo.ServiceName,
+				requestInfo.MethodName,
+				proxy,
+			})
+		}
 	}
 	if !registeredMethod.isProxy || result.Data != nil {
 		panic(result)
@@ -171,7 +190,13 @@ func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id strin
 			return
 		}
 		connInfo.(connInfoType).onList.Range(func(_, on any) bool {
-			on.(onType).callBack()
+			if on.(*Proxy).Close != nil {
+				callback := *on.(*Proxy).Close
+				callback()
+			}
+			if on.(*Proxy).Open != nil {
+				on.(*Proxy).Cancel()
+			}
 			return true
 		})
 		fun.connList.Delete(id)
@@ -207,6 +232,7 @@ func (fun *Fun) returnData(id string, requestId string, data any) {
 	case Result[any]:
 		result = value
 	case error:
+		//堆栈错误
 		result = callError(value.Error())
 	default:
 		result = callError(fmt.Sprintf("%v", data))
