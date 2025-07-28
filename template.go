@@ -24,10 +24,10 @@ export default class fun {
 }
 
 func genServiceTemplate() string {
-	return `import {result,on} from "fun-client";
+	return `import type {result,on} from "fun-client";
 import {defaultApi} from "./fun"
 {{- range .GenImport}}
-import {{.Name}} from "./{{.Path}}";
+import type {{.Name}} from "./{{.Path}}";
 {{- end}}
 export default class {{.ServiceName}} {
   private client: defaultApi;
@@ -44,7 +44,7 @@ export default class {{.ServiceName}} {
 }
 
 func genStructTemplate() string {
-	return `{{- range .GenImport}}import {{.Name}} from "./{{.Path}}";{{- end}}
+	return `{{- range .GenImport}}import type {{.Name}} from "./{{.Path}}";{{- end}}
 export default interface {{.Name}} {
   {{- range .GenClassFieldType}}
   {{.Name}}:{{.Type}}

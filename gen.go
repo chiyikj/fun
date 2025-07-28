@@ -45,6 +45,33 @@ type genClassFieldType struct {
 	Type string
 }
 
+func typeToJsType(t reflect.Type) string {
+	text := ""
+	if t.Kind() == reflect.Ptr {
+		text += " | null"
+	}
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	switch t.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		text = "number" + text
+		break
+	case reflect.Bool:
+		text = "boolean" + text
+		break
+	case
+		reflect.String, reflect.Struct:
+		text = t.Name() + text
+		break
+	default:
+		text = typeToJsType(t.Elem()) + "[]" + text
+		break
+	}
+	return text
+}
+
 func genService(
 	service *service,
 	serviceContext *genServiceType,
