@@ -23,7 +23,7 @@ func (ctx UserService) HalloWord(user User) *int8 {
 	return nil
 }
 
-func (ctx UserService) HalloWord1(porxy fun.ProxyClose) *User {
+func (ctx UserService) HalloWord1(proxyClose *fun.Proxy) *User {
 	return nil
 }
 
