@@ -12,7 +12,7 @@ type UserService struct {
 }
 
 type User struct {
-	User   string
+	User   string `validate:"min=6,max=10"`
 	Name   *string
 	Config *[]Dependency.Config
 }
