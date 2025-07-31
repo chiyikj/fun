@@ -50,8 +50,8 @@ func handleWebSocket(fun *Fun) func(w http.ResponseWriter, r *http.Request) {
 		//封装用户上下文
 		ctx := Ctx{Id: id, fun: fun}
 		ctx.Ip = getIP(r)
-		ctx.Send = func(id string, requestId string, data any) bool {
-			return fun.push(id, requestId, data)
+		ctx.Push = func(id string, requestId string, data any) bool {
+			return fun.Push(id, requestId, data)
 		}
 		ctx.Close = func(id string, requestId string) {
 			fun.send(id, closeError(requestId))

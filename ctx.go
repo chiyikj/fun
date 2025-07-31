@@ -9,7 +9,7 @@ type Ctx struct {
 	RequestId   string
 	MethodName  string
 	ServiceName string
-	Send        func(id string, requestId string, data any) bool
+	Push        func(id string, requestId string, data any) bool
 	Close       func(id string, requestId string)
 	fun         *Fun
 }

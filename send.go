@@ -13,7 +13,7 @@ func (fun *Fun) send(id string, text any) bool {
 }
 
 // 推送
-func (fun *Fun) push(id string, requestId string, data any) bool {
+func (fun *Fun) Push(id string, requestId string, data any) bool {
 	connInfo, ok := fun.connList.Load(id)
 	if !ok {
 		return false
