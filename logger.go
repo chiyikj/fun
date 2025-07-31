@@ -43,7 +43,7 @@ const logFile = "./log/"
 
 var logger *Logger = &Logger{
 	Level:          TraceLevel,
-	Mode:           FileMode,
+	Mode:           TerminalMode,
 	MaxSizeFile:    0,
 	MaxNumberFiles: 0,
 	ExpireLogsDays: 0,

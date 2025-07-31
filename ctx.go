@@ -1,7 +1,5 @@
 package fun
 
-import "context"
-
 type Ctx struct {
 	Ip          string
 	Id          string
@@ -14,15 +12,10 @@ type Ctx struct {
 	fun         *Fun
 }
 
-type Proxy struct {
-	Open   *func()
-	Close  *func()
-	Ctx    context.Context
-	Cancel context.CancelFunc
-}
+type ProxyClose func(callBack func())
 
 type onType struct {
 	serviceName string
 	methodName  string
-	proxy       *Proxy
+	callBack    *func()
 }
