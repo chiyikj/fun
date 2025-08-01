@@ -11,10 +11,9 @@ type T struct {
 	Name string
 }
 
-func (config *Config) New() *string {
+func (config *Config) New() {
 	fmt.Println("我是config的new")
 	config.Page = 5
-	return nil
 }
 
 type X struct {

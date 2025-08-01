@@ -119,6 +119,14 @@ func checkBox(s reflect.StructField, boxList map[reflect.Type]bool) {
 	if isPrivate(s.Name) {
 		panic("Fun:" + s.Name + " cannot be Private")
 	}
+	//判断New函数是不是空参数
+	if newMethod, found := s.Type.MethodByName("New"); found {
+		// NumIn()返回值包括接收者本身，所以无参数的方法NumIn()应该等于1
+		// NumOut()检查返回值数量，应该等于0
+		if newMethod.Type.NumIn() != 1 || newMethod.Type.NumOut() != 0 {
+			panic("Fun:" + s.Name + " New method must have no parameters and no return values")
+		}
+	}
 	for i := 0; i < s.Type.Elem().NumField(); i++ {
 		f := s.Type.Elem().Field(i)
 		fieldTag := newTag(f.Tag)
