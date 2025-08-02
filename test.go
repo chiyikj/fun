@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+func TestOne(TestEntity any, methodName string) {
+
+}
+
 func Test(TestEntity any) {
 	t := reflect.TypeOf(TestEntity)
 	// 检查是否为结构体

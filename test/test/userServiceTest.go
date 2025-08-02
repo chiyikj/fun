@@ -11,13 +11,13 @@ type UserServiceTest struct {
 	Service userService.UserService
 }
 
-//func (ctx UserServiceTest) HalloWord() {
-//	request := fun.GetRequestInfo(userService.UserService{}, "HalloWord", userService.User{
-//		Name: nil,
-//		User: "123456",
-//	}, map[string]string{})
-//	fmt.Println(fun.MockRequest[*int8](request))
-//}
+func (ctx UserServiceTest) HalloWord() {
+	request := fun.GetRequestInfo(userService.UserService{}, "HalloWord", userService.User{
+		Name: nil,
+		User: "123456",
+	}, map[string]string{})
+	fmt.Println(fun.MockRequest[*int8](request))
+}
 
 func (ctx UserServiceTest) HalloWord1() {
 	request := fun.GetRequestInfo(userService.UserService{}, "HalloWord1", map[string]string{}, map[string]string{})
