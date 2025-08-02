@@ -101,8 +101,8 @@ func (fun *Fun) close(id string, requestId string) {
 	loadConnInfo := connInfo.(connInfoType)
 	on, ok := loadConnInfo.onList.Load(requestId)
 	if ok {
-		if on.(*onType).callBack != nil {
-			callback := *on.(*onType).callBack
+		if on.(onType).callBack != nil {
+			callback := *on.(onType).callBack
 			callback()
 		}
 		loadConnInfo.onList.Delete(requestId)
@@ -163,7 +163,7 @@ func (fun *Fun) cellMethod(ctx *Ctx, service *service, registeredMethod *method,
 	} else {
 		result = success(value[0].Interface())
 	}
-	if !registeredMethod.isProxy || result.Data != nil {
+	if !registeredMethod.isProxy || !value[0].IsNil() {
 		panic(result)
 	}
 
@@ -180,8 +180,8 @@ func (fun *Fun) closeFuncCell(timer **time.Timer, conn *websocket.Conn, id strin
 			return
 		}
 		connInfo.(connInfoType).onList.Range(func(_, on any) bool {
-			if on.(*onType).callBack != nil {
-				callback := *on.(*onType).callBack
+			if on.(onType).callBack != nil {
+				callback := *on.(onType).callBack
 				callback()
 			}
 			return true

@@ -24,6 +24,12 @@ func (ctx UserService) HalloWord(user User) *int8 {
 }
 
 func (ctx UserService) HalloWord1(proxyClose fun.ProxyClose) *User {
+	ctx.Ctx.Push(ctx.Id, ctx.RequestId, &User{
+		User: "111",
+	})
+	proxyClose(func() {
+		fmt.Println("我关闭了")
+	})
 	return nil
 }
 
@@ -31,7 +37,7 @@ func (ctx UserService) HalloWord3() {
 }
 
 func init() {
-	fun.BindService(UserService{}, Qqq{}, Qqq1{})
+	fun.BindService(UserService{})
 }
 
 type Qqq struct {
@@ -40,18 +46,4 @@ type Qqq struct {
 
 type Qqq1 struct {
 	Config *Dependency.Config
-}
-
-func (q Qqq) Guard(serviceName string, methodName string, state map[string]string) *fun.Result[any] {
-	//TODO implement me
-	fmt.Println("前面1")
-	return nil
-}
-
-func (q Qqq1) Guard(serviceName string, methodName string, state map[string]string) *fun.Result[any] {
-	//TODO implement me
-	fmt.Println(serviceName, methodName)
-	fmt.Println("前面2")
-	//a := fun.Error(300, "22222")
-	return nil
 }

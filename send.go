@@ -21,22 +21,20 @@ func (fun *Fun) Push(id string, requestId string, data any) bool {
 	loadConnInfo := connInfo.(connInfoType)
 	loadConnInfo.mu.Lock()
 	defer loadConnInfo.mu.Unlock()
-	var result Result[any]
-	result.Id = requestId
 	on, ok := loadConnInfo.onList.Load(requestId)
 	if ok {
 		method := fun.serviceList[on.(onType).serviceName].methodList[on.(onType).methodName]
-		if method.method.Type.Out(0).Elem() == reflect.TypeOf(data) {
-			result = success(data)
+		if method.method.Type.Out(0) == reflect.TypeOf(data) {
+			result := success(data)
+			result.Id = requestId
+			err := loadConnInfo.conn.WriteJSON(result)
+			if err != nil {
+				return false
+			}
 		} else {
-			result = callError("fun:" + on.(onType).methodName + " method return type Inconsistent")
+			return false
 		}
-		loadConnInfo.onList.Delete(requestId)
 	} else {
-		return false
-	}
-	err := loadConnInfo.conn.WriteJSON(result)
-	if err != nil {
 		return false
 	}
 	return true

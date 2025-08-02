@@ -83,8 +83,8 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 		//处理客户端ping信息 回复
 		if len(*message) == 1 && (*message)[0] == 0 {
 			fun.sendPong(ctx.Id)
+			fun.resetTimer(timer, conn, ctx.Id)
 		}
-		fun.resetTimer(timer, conn, ctx.Id)
 		return
 	}
 	InfoLogger(string(*message))
@@ -113,11 +113,11 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 
 // 处理请求
 func (fun *Fun) handleRequest(request *RequestInfo[map[string]any], ctx *Ctx) {
-	if request.Id == "" || request.MethodName == "" {
-		//处理为空的情况
-		panic("json: cannot unmarshal number into Go value of type cyi.Request")
-	} else if request.Type == CloseType {
+	if request.Type == CloseType {
 		fun.close(ctx.Id, ctx.RequestId)
+	} else if request.Id == "" || request.MethodName == "" || request.ServiceName == "" {
+		//处理为空的情况
+		panic("fun: request fields cannot be empty (id, methodName, serviceName)")
 	} else {
 		fun.dto(request, ctx)
 	}

@@ -2,27 +2,42 @@ package fun
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-func client(id string, port uint16) *websocket.Conn {
-	url := fmt.Sprintf("ws://localhost:%d?id=%s", port, id)
+var clientId = "lGbk6IVcT965Qs_zb30KS"
+var writeMutex sync.Mutex // 添加互斥锁
+func SetTestClientId(id string) {
+	clientId = id
+}
+
+var testClient *websocket.Conn = nil
+
+func client(port uint16) {
+	url := fmt.Sprintf("ws://localhost:%d?id=%s", port, clientId)
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	for err != nil {
 		conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 		time.Sleep(100 * time.Millisecond)
 	}
-	return conn
-}
-
-type ClientInfo struct {
-	Id string
-}
-
-func GetClientInfo(id string) ClientInfo {
-	return ClientInfo{
-		Id: id,
-	}
+	testClient = conn
+	go func() {
+		for {
+			writeMutex.Lock() // 加锁
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte{0})
+			writeMutex.Unlock()
+			time.Sleep(5 * time.Second)
+		}
+	}()
+	go func() {
+		for {
+			messageType, message, _ := conn.ReadMessage()
+			if messageType == websocket.TextMessage {
+				testMessageQueue <- message
+			}
+		}
+	}()
 }
