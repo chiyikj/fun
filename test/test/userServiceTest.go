@@ -24,7 +24,6 @@ func (ctx UserServiceTest) HalloWord1() {
 	proxy := fun.ProxyMessage{
 		Message: func(message any) {
 			fmt.Printf("Received message: %+v\n", message)
-
 		},
 		Close: func() {
 			// 处理连接关闭事件
