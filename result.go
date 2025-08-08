@@ -28,5 +28,5 @@ func callError(msg string) Result[any] {
 }
 
 func closeError(requestId string) Result[any] {
-	return Result[any]{Id: requestId, Status: CloseErrorCode}
+	return Result[any]{Id: requestId, Status: closeErrorCode}
 }
