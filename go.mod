@@ -1,4 +1,4 @@
-module fun
+module github.com/chiyikj/fun
 
 go 1.23.3
 
