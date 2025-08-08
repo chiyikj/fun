@@ -3,7 +3,6 @@ package fun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/chiyikj/fun/mock"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"reflect"
@@ -60,7 +59,7 @@ func Start(addr ...uint16) {
 		}
 	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
-	err := http.ListenAndServe("127.0.0.1:"+mock.isPort(addr), nil)
+	err := http.ListenAndServe("127.0.0.1:"+isPort(addr), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +87,7 @@ func StartTls(certFile string, keyFile string, addr ...uint16) {
 		}
 	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
-	err := http.ListenAndServeTLS("localhost:"+mock.isPort(addr), certFile, keyFile, nil)
+	err := http.ListenAndServeTLS("localhost:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
 		panic(err)
 	}
