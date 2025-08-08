@@ -4,7 +4,7 @@ const (
 	successCode = iota
 	cellErrorCode
 	errorCode
-	CloseErrorCode
+	closeErrorCode
 )
 
 type Result[T any] struct {

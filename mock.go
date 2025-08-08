@@ -1,8 +1,7 @@
-package mock
+package fun
 
 import (
 	"encoding/json"
-	"github.com/chiyikj/fun"
 	"reflect"
 	"time"
 )
@@ -50,10 +49,11 @@ func mockSendJson(requestInfo any) {
 	}
 }
 
-func MockRequest[T any](requestInfo any) fun.Result[T] {
+func MockRequest[T any](requestInfo any) Result[T] {
+	newClientOrService()
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
 	mockSendJson(requestInfo)
-	result := fun.Result[T]{}
+	result := Result[T]{}
 	getMessage(requestId, &result)
 	return result
 }
@@ -64,14 +64,15 @@ type ProxyMessage struct {
 }
 
 func MockProxyClose(id string) {
-	requestInfo := fun.RequestInfo[any]{
+	requestInfo := RequestInfo[any]{
 		Id:   id,
-		Type: fun.CloseType,
+		Type: CloseType,
 	}
 	mockSendJson(requestInfo)
 }
 
 func MockProxy(requestInfo any, proxy ProxyMessage, seconds int64) {
+	newClientOrService()
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
 	mockSendJson(requestInfo)
 	GetProxyMessage(requestId, proxy, seconds)
@@ -99,8 +100,8 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 				break
 			}
 
-			var result = fun.Result[any]{}
-			if result.Status == fun.CloseErrorCode {
+			var result = Result[any]{}
+			if result.Status == closeErrorCode {
 				if proxy.Close != nil {
 					proxy.Close()
 				}
@@ -114,20 +115,22 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 			}
 			proxy.Message(result.Data)
 		case <-timeout:
-			mockSendJson(fun.RequestInfo[any]{
+			mockSendJson(RequestInfo[any]{
 				Id:   id,
-				Type: fun.CloseType,
+				Type: CloseType,
 			})
 			return
 		}
 	}
 }
 
-func init() {
-	port := randomPort()
-	testPort = &port
-	go func() {
-		fun.Start(port)
-	}()
-	client(*testPort)
+func newClientOrService() {
+	if testPort == nil {
+		port := randomPort()
+		testPort = &port
+		go func() {
+			Start(port)
+		}()
+		client(*testPort)
+	}
 }
