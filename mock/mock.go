@@ -1,7 +1,8 @@
-package fun
+package mock
 
 import (
 	"encoding/json"
+	"github.com/chiyikj/fun"
 	"reflect"
 	"time"
 )
@@ -49,10 +50,10 @@ func mockSendJson(requestInfo any) {
 	}
 }
 
-func MockRequest[T any](requestInfo any) Result[T] {
+func MockRequest[T any](requestInfo any) fun.Result[T] {
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
 	mockSendJson(requestInfo)
-	result := Result[T]{}
+	result := fun.Result[T]{}
 	getMessage(requestId, &result)
 	return result
 }
@@ -63,9 +64,9 @@ type ProxyMessage struct {
 }
 
 func MockProxyClose(id string) {
-	requestInfo := RequestInfo[any]{
+	requestInfo := fun.RequestInfo[any]{
 		Id:   id,
-		Type: CloseType,
+		Type: fun.CloseType,
 	}
 	mockSendJson(requestInfo)
 }
@@ -98,8 +99,8 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 				break
 			}
 
-			var result = Result[any]{}
-			if result.Status == closeErrorCode {
+			var result = fun.Result[any]{}
+			if result.Status == fun.CloseErrorCode {
 				if proxy.Close != nil {
 					proxy.Close()
 				}
@@ -113,20 +114,20 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 			}
 			proxy.Message(result.Data)
 		case <-timeout:
-			mockSendJson(RequestInfo[any]{
+			mockSendJson(fun.RequestInfo[any]{
 				Id:   id,
-				Type: CloseType,
+				Type: fun.CloseType,
 			})
 			return
 		}
 	}
 }
 
-// func init() {
-// 	port := randomPort()
-// 	testPort = &port
-// 	go func() {
-// 		Start(port)
-// 	}()
-// 	client(*testPort)
-// }
+func init() {
+	port := randomPort()
+	testPort = &port
+	go func() {
+		fun.Start(port)
+	}()
+	client(*testPort)
+}

@@ -4,7 +4,7 @@ const (
 	successCode = iota
 	cellErrorCode
 	errorCode
-	closeErrorCode
+	CloseErrorCode
 )
 
 type Result[T any] struct {
@@ -28,5 +28,5 @@ func callError(msg string) Result[any] {
 }
 
 func closeError(requestId string) Result[any] {
-	return Result[any]{Id: requestId, Status: closeErrorCode}
+	return Result[any]{Id: requestId, Status: CloseErrorCode}
 }
