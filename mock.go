@@ -122,11 +122,11 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 	}
 }
 
-func init() {
-	port := randomPort()
-	testPort = &port
-	go func() {
-		Start(port)
-	}()
-	client(*testPort)
-}
+// func init() {
+// 	port := randomPort()
+// 	testPort = &port
+// 	go func() {
+// 		Start(port)
+// 	}()
+// 	client(*testPort)
+// }
