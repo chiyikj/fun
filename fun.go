@@ -50,20 +50,12 @@ func GetFun() *Fun {
 }
 
 func Start(addr ...uint16) {
-	defer func() {
-		if err := recover(); err != nil {
-			stackBuf := make([]byte, 8192)
-			stackSize := runtime.Stack(stackBuf, false)
-			stackTrace := string(stackBuf[:stackSize])
-			PanicLogger(getErrorString(err) + "\n" + stackTrace)
-		}
-	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
+	InfoLogger("Server started on port " + isPort(addr))
 	err := http.ListenAndServe("127.0.0.1:"+isPort(addr), nil)
 	if err != nil {
 		panic(err)
 	}
-	InfoLogger("Server started on port " + isPort(addr))
 }
 
 func Gen() {
@@ -79,20 +71,12 @@ func Gen() {
 }
 
 func StartTls(certFile string, keyFile string, addr ...uint16) {
-	defer func() {
-		if err := recover(); err != nil {
-			stackBuf := make([]byte, 8192)
-			stackSize := runtime.Stack(stackBuf, false)
-			stackTrace := string(stackBuf[:stackSize])
-			PanicLogger(getErrorString(err) + "\n" + stackTrace)
-		}
-	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
+	InfoLogger("Server started on port " + isPort(addr))
 	err := http.ListenAndServeTLS("localhost:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
 		panic(err)
 	}
-	InfoLogger("Server started on port " + isPort(addr))
 }
 
 func (fun *Fun) close(id string, requestId string) {
