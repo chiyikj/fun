@@ -1,6 +1,7 @@
 package fun
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -381,10 +382,25 @@ func sendLogWorker(level uint8, message any) {
 		var msgStr string
 		switch v := message.(type) {
 		case string:
-			msgStr = v
+			var out bytes.Buffer
+			q := []byte(strings.TrimSpace(v))
+			json.Indent(&out, q, "", "\t")
+			if out.Len() > 0 {
+				msgStr = fmt.Sprintf("\n%s", out.String())
+			} else {
+				msgStr = fmt.Sprintf("%s", v)
+			}
 		default:
-			jsonStr, _ := json.Marshal(v)
-			msgStr = string(jsonStr)
+			bs, _ := json.Marshal(v)
+			var out bytes.Buffer
+			json.Indent(&out, bs, "", "\t")
+			var temp interface{}
+			err := json.Unmarshal(bs, &temp)
+			if err != nil {
+				msgStr = fmt.Sprintf("%v", v)
+			} else {
+				msgStr = fmt.Sprintf("\n%s", out.String())
+			}
 		}
 
 		logChan <- logMessage{
