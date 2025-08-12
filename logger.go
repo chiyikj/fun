@@ -381,7 +381,7 @@ func sendLogWorker(level uint8, message any) {
 		jsonStr, _ := json.Marshal(message)
 		logChan <- logMessage{
 			level:   level,
-			message: getMethodNameLogger() + fmt.Sprintf("%v", jsonStr),
+			message: getMethodNameLogger() + string(jsonStr),
 		}
 	}
 }
