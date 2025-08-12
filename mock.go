@@ -2,6 +2,7 @@ package fun
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"time"
 )
@@ -11,6 +12,7 @@ var testPort *uint16 = nil
 var testMessageQueue = make(chan []byte, 100)
 
 func getMessage(id string, result any) {
+	timeout := time.After(10 * time.Second)
 	for {
 		select {
 		case message := <-testMessageQueue:
@@ -33,8 +35,11 @@ func getMessage(id string, result any) {
 			// 将消息反序列化到目标结果中
 			err = json.Unmarshal(message, result)
 			if err != nil {
-				break
+				result = callError(fmt.Sprintf("fun:request error: %v", err))
 			}
+			return
+		case <-timeout:
+			result = callError("fun:request timeout")
 			return
 		}
 	}
@@ -54,6 +59,7 @@ func MockRequest[T any](requestInfo any) Result[T] {
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
 	mockSendJson(requestInfo)
 	result := Result[T]{}
+
 	getMessage(requestId, &result)
 	return result
 }
