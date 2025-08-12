@@ -55,6 +55,7 @@ func Wired(data any) {
 	}
 	GetFun()
 	v := reflect.ValueOf(data)
+	fun.boxList.Store(t, v)
 	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.Elem().NumField(); i++ {
 		c := t.Elem().Field(i)
