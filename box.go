@@ -50,13 +50,29 @@ func Wired(data any) {
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		panic("Fun: " + t.Name() + " It must be a pointer to a structure")
 	}
-	f := GetFun()
-	boxList := map[reflect.Type]bool{}
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		checkBox(f, boxList)
+	GetFun()
+	v := reflect.ValueOf(data).Elem()
+	for i := 0; i < t.Elem().NumField(); i++ {
+		c := t.Field(i)
+		fieldTag := newTag(c.Tag)
+
+		// 检查是否有 "auto" 标签
+		if _, isAuto := fieldTag.GetTag("auto"); isAuto {
+			// 查找是否已有该类型的依赖
+			if dependency, loaded := fun.boxList.Load(c.Type); loaded {
+				// 如果已存在，直接赋值
+				v.Field(i).Set(dependency.(reflect.Value))
+			} else {
+				// 否则递归注入该字段
+				fun.autowired(v.Field(i))
+			}
+		}
 	}
-	f.autowired(reflect.ValueOf(data))
+	// 调用 New() 方法（如果存在）
+	newMethod := v.MethodByName("New")
+	if newMethod.IsValid() {
+		newMethod.Call(nil)
+	}
 }
 
 func (fun *Fun) autowired(fieldValue reflect.Value) {
