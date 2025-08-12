@@ -1,6 +1,7 @@
 package fun
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -377,9 +378,10 @@ func getLevelName(level uint8) string {
 
 func sendLogWorker(level uint8, message any) {
 	if logger.Level >= level {
+		jsonStr, _ := json.Marshal(message)
 		logChan <- logMessage{
 			level:   level,
-			message: getMethodNameLogger() + fmt.Sprintf("%v", message),
+			message: getMethodNameLogger() + fmt.Sprintf("%v", jsonStr),
 		}
 	}
 }

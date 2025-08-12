@@ -1,7 +1,6 @@
 package fun
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -236,8 +235,7 @@ func (fun *Fun) returnData(id string, requestId string, data any, stackTrace str
 	if value, ok := data.(Result[any]); ok {
 		result = value
 		result.Id = requestId
-		jsonStr, _ := json.Marshal(result)
-		InfoLogger(string(jsonStr))
+		InfoLogger(result)
 	} else {
 		result = callError(getErrorString(data))
 		result.Id = requestId
