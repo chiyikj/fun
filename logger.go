@@ -378,10 +378,18 @@ func getLevelName(level uint8) string {
 
 func sendLogWorker(level uint8, message any) {
 	if logger.Level >= level {
-		jsonStr, _ := json.Marshal(message)
+		var msgStr string
+		switch v := message.(type) {
+		case string:
+			msgStr = v
+		default:
+			jsonStr, _ := json.Marshal(v)
+			msgStr = string(jsonStr)
+		}
+
 		logChan <- logMessage{
 			level:   level,
-			message: getMethodNameLogger() + string(jsonStr),
+			message: getMethodNameLogger() + msgStr,
 		}
 	}
 }
