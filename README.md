@@ -192,7 +192,7 @@ type UserServiceTest struct {
 
 func (test UserServiceTest) HelloWord() {
     request := fun.GetRequestInfo(map[string]any{
-        "User": "test",
+        "User": "abc",
         "Name": "1212",
     }, map[string]string{})
     

@@ -23,16 +23,16 @@ type RequestInfo[T any] struct {
 
 func GetRequestInfo(test *testing.T, service any, methodName string, dto any, state map[string]string) RequestInfo[any] {
 	if methodName == "" {
-		test.Fatalf("test: methodName cannot be empty")
+		test.Fatalf("abc: methodName cannot be empty")
 	}
 	t := reflect.TypeOf(service)
 	if t.Kind() != reflect.Struct {
-		test.Fatalf("test: service must be a struct")
+		test.Fatalf("abc: service must be a struct")
 	}
 	// 可选：检查方法是否存在
 	method, exists := t.MethodByName(methodName)
 	if !exists {
-		test.Fatalf("test: service does not have method " + methodName)
+		test.Fatalf("abc: service does not have method " + methodName)
 	}
 	requestInfo := RequestInfo[any]{}
 	if method.Type.In(method.Type.NumIn()-1) == reflect.TypeOf((ProxyClose)(nil)) {

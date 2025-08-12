@@ -45,6 +45,20 @@ func guardWired(data Guard, fun *Fun) {
 	fun.guardList = append(fun.guardList, &guard)
 }
 
+func Wired(data any) {
+	t := reflect.TypeOf(data)
+	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
+		panic("Fun: " + t.Name() + " It must be a pointer to a structure")
+	}
+	f := GetFun()
+	boxList := map[reflect.Type]bool{}
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		checkBox(f, boxList)
+	}
+	f.autowired(reflect.ValueOf(data))
+}
+
 func (fun *Fun) autowired(fieldValue reflect.Value) {
 	// 创建当前字段类型的实例（指针类型）
 	instance := reflect.New(fieldValue.Type().Elem())

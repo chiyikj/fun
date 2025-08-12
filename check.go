@@ -9,6 +9,7 @@ func checkService(t reflect.Type, f *Fun) {
 	if t.Kind() == reflect.Ptr || t.Kind() != reflect.Struct {
 		panic("Fun: " + t.Name() + " Service It must not be a pointer but a structure")
 	}
+	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		if i == 0 {
@@ -19,7 +20,6 @@ func checkService(t reflect.Type, f *Fun) {
 				panic("Fun:Ctx must be anonymous")
 			}
 		} else {
-			boxList := map[reflect.Type]bool{}
 			checkBox(f, boxList)
 		}
 	}
