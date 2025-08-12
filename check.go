@@ -9,6 +9,9 @@ func checkService(t reflect.Type, f *Fun) {
 	if t.Kind() == reflect.Ptr || t.Kind() != reflect.Struct {
 		panic("Fun: " + t.Name() + " Service It must not be a pointer but a structure")
 	}
+	if isPrivate(t.Name()) {
+		panic("Fun:" + t.Name() + " cannot be Private")
+	}
 	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)

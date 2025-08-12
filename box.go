@@ -50,8 +50,12 @@ func Wired(data any) {
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		panic("Fun: " + t.Name() + " It must be a pointer to a structure")
 	}
+	if isPrivate(t.Name()) {
+		panic("Fun:" + t.Name() + " cannot be Private")
+	}
 	GetFun()
 	v := reflect.ValueOf(data).Elem()
+	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.Elem().NumField(); i++ {
 		c := t.Field(i)
 		fieldTag := newTag(c.Tag)
@@ -64,6 +68,7 @@ func Wired(data any) {
 				v.Field(i).Set(dependency.(reflect.Value))
 			} else {
 				// 否则递归注入该字段
+				checkBox(c, boxList)
 				fun.autowired(v.Field(i))
 			}
 		}
