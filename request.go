@@ -21,7 +21,7 @@ type RequestInfo[T any] struct {
 	Type        uint8
 }
 
-func GetRequestInfo[T any](test *testing.T, service any, methodName string, dto T, state map[string]string) RequestInfo[T] {
+func GetRequestInfo(test *testing.T, service any, methodName string, dto any, state map[string]string) RequestInfo[any] {
 	if methodName == "" {
 		test.Fatalf("test: methodName cannot be empty")
 	}
@@ -34,7 +34,7 @@ func GetRequestInfo[T any](test *testing.T, service any, methodName string, dto 
 	if !exists {
 		test.Fatalf("test: service does not have method " + methodName)
 	}
-	var requestInfo RequestInfo[T] = RequestInfo[T]{}
+	requestInfo := RequestInfo[any]{}
 	if method.Type.In(method.Type.NumIn()-1) == reflect.TypeOf((ProxyClose)(nil)) {
 		requestInfo.Type = ProxyType
 	} else {
