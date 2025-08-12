@@ -375,35 +375,35 @@ func getLevelName(level uint8) string {
 	}
 }
 
-func sendLogWorker(level uint8, message string) {
+func sendLogWorker(level uint8, message any) {
 	if logger.Level >= level {
 		logChan <- logMessage{
 			level:   level,
-			message: getMethodNameLogger() + message,
+			message: getMethodNameLogger() + fmt.Sprintf("%v", message),
 		}
 	}
 }
 
-func DebugLogger(message string) {
+func DebugLogger(message any) {
 	sendLogWorker(DebugLevel, message)
 }
 
-func InfoLogger(message string) {
+func InfoLogger(message any) {
 	sendLogWorker(InfoLevel, message)
 }
 
-func TraceLogger(message string) {
+func TraceLogger(message any) {
 	sendLogWorker(TraceLevel, message)
 }
 
-func ErrorLogger(message string) {
+func ErrorLogger(message any) {
 	sendLogWorker(ErrorLevel, message)
 }
-func WarnLogger(message string) {
+func WarnLogger(message any) {
 	sendLogWorker(WarnLevel, message)
 }
 
-func PanicLogger(message string) {
+func PanicLogger(message any) {
 	sendLogWorker(PanicLevel, message)
 }
 

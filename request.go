@@ -3,6 +3,7 @@ package fun
 import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"reflect"
+	"testing"
 )
 
 const (
@@ -20,18 +21,18 @@ type RequestInfo[T any] struct {
 	Type        uint8
 }
 
-func GetRequestInfo[T any](service any, methodName string, dto T, state map[string]string) RequestInfo[T] {
+func GetRequestInfo[T any](test *testing.T, service any, methodName string, dto T, state map[string]string) RequestInfo[T] {
 	if methodName == "" {
-		panic("test: methodName cannot be empty")
+		test.Fatalf("test: methodName cannot be empty")
 	}
 	t := reflect.TypeOf(service)
 	if t.Kind() != reflect.Struct {
-		panic("test: service must be a struct")
+		test.Fatalf("test: service must be a struct")
 	}
 	// 可选：检查方法是否存在
 	method, exists := t.MethodByName(methodName)
 	if !exists {
-		panic("test: service does not have method " + methodName)
+		test.Fatalf("test: service does not have method " + methodName)
 	}
 	var requestInfo RequestInfo[T] = RequestInfo[T]{}
 	if method.Type.In(method.Type.NumIn()-1) == reflect.TypeOf((ProxyClose)(nil)) {

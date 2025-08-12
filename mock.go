@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"testing"
 	"time"
 )
 
@@ -11,7 +12,7 @@ var testPort *uint16 = nil
 
 var testMessageQueue = make(chan []byte, 100)
 
-func getMessage(id string, result any) {
+func getMessage(t *testing.T, id string, result any) {
 	timeout := time.After(10 * time.Second)
 	for {
 		select {
@@ -23,44 +24,44 @@ func getMessage(id string, result any) {
 			}
 
 			// 解析消息以获取ID
-			err := json.Unmarshal(message, &tempResult)
-			if err != nil {
-				panic(err)
-			}
+			_ = json.Unmarshal(message, &tempResult)
 
 			// 检查ID是否一致
 			if tempResult.Id != id {
 				break
 			}
 			// 将消息反序列化到目标结果中
-			err = json.Unmarshal(message, result)
+			err := json.Unmarshal(message, result)
 			if err != nil {
-				result = callError(fmt.Sprintf("fun:request error: %v", err))
+				ErrorLogger(fmt.Sprintf("%v", err))
+				t.Fail()
 			}
 			return
 		case <-timeout:
-			result = callError("fun:request timeout")
+			ErrorLogger(callError("fun:request timeout"))
+			t.Fail()
 			return
 		}
 	}
 }
 
-func mockSendJson(requestInfo any) {
+func mockSendJson(t *testing.T, requestInfo any) {
 	writeMutex.Lock()
 	err := testClient.WriteJSON(requestInfo)
 	writeMutex.Unlock()
 	if err != nil {
-		panic(err)
+		ErrorLogger(fmt.Sprintf("%v", err))
+		t.Fail()
 	}
 }
 
-func MockRequest[T any](requestInfo any) Result[T] {
+func MockRequest[T any](t *testing.T, requestInfo any) Result[T] {
 	newClientOrService()
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
-	mockSendJson(requestInfo)
+	mockSendJson(t, requestInfo)
 	result := Result[T]{}
-
-	getMessage(requestId, &result)
+	getMessage(t, requestId, &result)
+	result.Id = requestId
 	return result
 }
 
@@ -69,22 +70,22 @@ type ProxyMessage struct {
 	Close   func()
 }
 
-func MockProxyClose(id string) {
+func MockProxyClose(t *testing.T, id string) {
 	requestInfo := RequestInfo[any]{
 		Id:   id,
 		Type: CloseType,
 	}
-	mockSendJson(requestInfo)
+	mockSendJson(t, requestInfo)
 }
 
-func MockProxy(requestInfo any, proxy ProxyMessage, seconds int64) {
+func MockProxy(t *testing.T, requestInfo any, proxy ProxyMessage, seconds int64) {
 	newClientOrService()
 	requestId := reflect.ValueOf(requestInfo).FieldByName("Id").String()
-	mockSendJson(requestInfo)
-	GetProxyMessage(requestId, proxy, seconds)
+	mockSendJson(t, requestInfo)
+	GetProxyMessage(t, requestId, proxy, seconds)
 }
 
-func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
+func GetProxyMessage(t *testing.T, id string, proxy ProxyMessage, seconds int64) {
 	timeout := time.After(time.Duration(seconds) * time.Second)
 	for {
 		select {
@@ -96,10 +97,7 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 			}
 
 			// 解析消息以获取ID
-			err := json.Unmarshal(message, &tempResult)
-			if err != nil {
-				panic(err)
-			}
+			_ = json.Unmarshal(message, &tempResult)
 
 			// 检查ID是否一致
 			if tempResult.Id != id {
@@ -115,13 +113,13 @@ func GetProxyMessage(id string, proxy ProxyMessage, seconds int64) {
 			}
 
 			// 将消息反序列化到目标结果中
-			err = json.Unmarshal(message, &result)
+			err := json.Unmarshal(message, &result)
 			if err != nil {
 				break
 			}
 			proxy.Message(result.Data)
 		case <-timeout:
-			mockSendJson(RequestInfo[any]{
+			mockSendJson(t, RequestInfo[any]{
 				Id:   id,
 				Type: CloseType,
 			})
