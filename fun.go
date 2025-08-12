@@ -63,6 +63,7 @@ func Start(addr ...uint16) {
 	if err != nil {
 		panic(err)
 	}
+	InfoLogger("Server started on port " + isPort(addr))
 }
 
 func Gen() {
@@ -91,6 +92,7 @@ func StartTls(certFile string, keyFile string, addr ...uint16) {
 	if err != nil {
 		panic(err)
 	}
+	InfoLogger("Server started on port " + isPort(addr))
 }
 
 func (fun *Fun) close(id string, requestId string) {
