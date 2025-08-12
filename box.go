@@ -48,16 +48,16 @@ func guardWired(data Guard, fun *Fun) {
 func Wired(data any) {
 	t := reflect.TypeOf(data)
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
-		panic("Fun: " + t.Name() + " It must be a pointer to a structure")
+		panic("Fun: " + t.Elem().Name() + " It must be a pointer to a structure")
 	}
-	if isPrivate(t.Name()) {
-		panic("Fun:" + t.Name() + " cannot be Private")
+	if isPrivate(t.Elem().Name()) {
+		panic("Fun:" + t.Elem().Name() + " cannot be Private")
 	}
 	GetFun()
-	v := reflect.ValueOf(data).Elem()
+	v := reflect.ValueOf(data)
 	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.Elem().NumField(); i++ {
-		c := t.Field(i)
+		c := t.Elem().Field(i)
 		fieldTag := newTag(c.Tag)
 
 		// 检查是否有 "auto" 标签
@@ -65,11 +65,11 @@ func Wired(data any) {
 			// 查找是否已有该类型的依赖
 			if dependency, loaded := fun.boxList.Load(c.Type); loaded {
 				// 如果已存在，直接赋值
-				v.Field(i).Set(dependency.(reflect.Value))
+				v.Elem().Field(i).Set(dependency.(reflect.Value))
 			} else {
 				// 否则递归注入该字段
 				checkBox(c, boxList)
-				fun.autowired(v.Field(i))
+				fun.autowired(v.Elem().Field(i))
 			}
 		}
 	}
