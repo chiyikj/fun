@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-var directory = "dist/"
+var directory = "gen/ts/service"
 
 type gen struct {
 	GenServiceList []*genServiceType
