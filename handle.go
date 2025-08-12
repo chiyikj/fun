@@ -103,6 +103,10 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 		if err != nil {
 			panic(err)
 		}
+		if request.Id == "" || request.MethodName == "" || request.ServiceName == "" {
+			//处理为空的情况
+			panic("fun: request fields cannot be empty (id, methodName, serviceName)")
+		}
 		ctx.RequestId = request.Id
 		ctx.ServiceName = request.ServiceName
 		ctx.MethodName = request.MethodName
@@ -115,9 +119,6 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 func (fun *Fun) handleRequest(request *RequestInfo[map[string]any], ctx *Ctx) {
 	if request.Type == CloseType {
 		fun.close(ctx.Id, ctx.RequestId)
-	} else if request.Id == "" || request.MethodName == "" || request.ServiceName == "" {
-		//处理为空的情况
-		panic("fun: request fields cannot be empty (id, methodName, serviceName)")
 	} else {
 		fun.dto(request, ctx)
 	}
