@@ -39,9 +39,20 @@ var (
 	fun  *Fun
 )
 
-func GetValidate() *validator.Validate {
+func BindValidate(tag string, fn validator.Func) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+		}
+	}()
 	f := GetFun()
-	return f.validate
+	err := f.validate.RegisterValidation(tag, fn)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func GetFun() *Fun {
