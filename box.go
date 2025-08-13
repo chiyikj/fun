@@ -53,6 +53,10 @@ func Wired(data any) {
 	if isPrivate(t.Elem().Name()) {
 		panic("Fun:" + t.Elem().Name() + " cannot be Private")
 	}
+	if box, isWired := fun.boxList.Load(t); isWired {
+		data = box.(reflect.Value).Interface()
+		return
+	}
 	GetFun()
 	v := reflect.ValueOf(data)
 	fun.boxList.Store(t, v)
