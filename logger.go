@@ -35,13 +35,7 @@ type Logger struct {
 	ExpireLogsDays uint8  //文件保留时间
 }
 
-// 日志消息结构体
-type logMessage struct {
-	level   uint8
-	message string
-}
-
-const logFile = "./log/"
+const logFile = "../log/"
 
 var logger *Logger = &Logger{
 	Level:          TraceLevel,
@@ -57,12 +51,9 @@ type fileName struct {
 }
 
 // 日志通道
-var logChan chan logMessage
 
 // 初始化日志系统
 func init() {
-	logChan = make(chan logMessage, 1000) // 创建带缓冲的通道
-	go logWorker()
 	go deleteLogWorker() // 清理
 }
 
@@ -194,19 +185,6 @@ func cleanupExpiredLogs() {
 	InfoLogger(fmt.Sprintf("Log cleanup completed. Deleted %d expired files", cleanedCount))
 }
 
-func logWorker() {
-	for msg := range logChan {
-		text := "[" + getCurrentTime() + "] [" + padString(getLevelName(msg.level), 7) + "] " + msg.message
-		if logger.Mode == FileMode {
-			// 文件模式
-			fileLogger(text)
-		} else {
-			fmt.Println(text)
-		}
-	}
-
-}
-
 func fileLogger(text string) {
 	// 确保日志目录存在
 	currentDate := getCurrentData()
@@ -334,7 +312,7 @@ func getNextLogFile(dirPath, dateStr string, text string) string {
 }
 
 func ConfigLogger(log *Logger) {
-	// 启动日志处理协程
+	// 启动日志处理
 	logger = log
 }
 
@@ -423,9 +401,12 @@ func sendLogWorker(level uint8, message any) {
 			// 是字符串、数值、布尔值或null，直接输出
 			msgStr = fmt.Sprintf("%v", message)
 		}
-		logChan <- logMessage{
-			level:   level,
-			message: getMethodNameLogger() + msgStr,
+		text := "[" + getCurrentTime() + "] [" + padString(getLevelName(level), 7) + "] " + getMethodNameLogger() + msgStr
+		if logger.Mode == FileMode {
+			// 文件模式
+			fileLogger(text)
+		} else {
+			fmt.Println(text)
 		}
 	}
 }
