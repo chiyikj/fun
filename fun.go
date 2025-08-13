@@ -2,6 +2,7 @@ package fun
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"reflect"
@@ -18,6 +19,7 @@ type Fun struct {
 	boxList     *sync.Map
 	guardList   []*any
 	mu          sync.Mutex
+	validate    *validator.Validate
 }
 
 type service struct {
@@ -37,6 +39,11 @@ var (
 	fun  *Fun
 )
 
+func GetValidate() *validator.Validate {
+	f := GetFun()
+	return f.validate
+}
+
 func GetFun() *Fun {
 	once.Do(func() {
 		fun = &Fun{
@@ -44,6 +51,7 @@ func GetFun() *Fun {
 			boxList:     &sync.Map{},
 			serviceList: map[string]*service{},
 			guardList:   []*any{},
+			validate:    validator.New(),
 		}
 	})
 	return fun

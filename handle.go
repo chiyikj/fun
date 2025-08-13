@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
 )
 
@@ -166,8 +165,7 @@ func (fun *Fun) dto(request *RequestInfo[map[string]any], ctx *Ctx) {
 			panic(err)
 		}
 		checkDto(method.dto, *request.Dto)
-		validate := validator.New()
-		err = validate.Struct(dto)
+		err = fun.validate.Struct(dto)
 		if err != nil {
 			panic(err)
 		}
