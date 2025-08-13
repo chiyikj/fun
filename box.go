@@ -1,7 +1,9 @@
 package fun
 
 import (
+	"os"
 	"reflect"
+	"runtime"
 )
 
 func boxWired(data any, fun *Fun) {
@@ -46,6 +48,15 @@ func guardWired(data Guard, fun *Fun) {
 }
 
 func Wired(data any) {
+	defer func() {
+		if err := recover(); err != nil {
+			stackBuf := make([]byte, 8192)
+			stackSize := runtime.Stack(stackBuf, false)
+			stackTrace := string(stackBuf[:stackSize])
+			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+			os.Exit(0)
+		}
+	}()
 	t := reflect.TypeOf(data)
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		panic("Fun: " + t.Elem().Name() + " It must be a pointer to a structure")

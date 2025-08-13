@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"os"
 	"reflect"
 	"runtime"
 	"sync"
@@ -46,6 +47,7 @@ func BindValidate(tag string, fn validator.Func) {
 			stackSize := runtime.Stack(stackBuf, false)
 			stackTrace := string(stackBuf[:stackSize])
 			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+			os.Exit(0)
 		}
 	}()
 	f := GetFun()
@@ -221,6 +223,7 @@ func BindService(service any, guardList ...Guard) {
 			stackSize := runtime.Stack(stackBuf, false)
 			stackTrace := string(stackBuf[:stackSize])
 			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+			os.Exit(0)
 		}
 	}()
 	f := GetFun()
@@ -242,6 +245,7 @@ func BindGuard(guard Guard) {
 			stackSize := runtime.Stack(stackBuf, false)
 			stackTrace := string(stackBuf[:stackSize])
 			PanicLogger(getErrorString(err) + "\n" + stackTrace)
+			os.Exit(0)
 		}
 	}()
 	f := GetFun()
