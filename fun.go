@@ -17,6 +17,7 @@ type Fun struct {
 	serviceList map[string]*service
 	boxList     *sync.Map
 	guardList   []*any
+	mu          sync.Mutex
 }
 
 type service struct {
