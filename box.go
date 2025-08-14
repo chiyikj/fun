@@ -67,7 +67,7 @@ func Wired(data any) {
 	GetFun()
 	fun.mu.Lock()
 	if box, isWired := fun.boxList.Load(t); isWired {
-		data = box.(reflect.Value).Interface()
+		reflect.ValueOf(data).Elem().Set(box.(reflect.Value).Elem())
 		fun.mu.Unlock()
 		return
 	}
