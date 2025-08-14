@@ -59,11 +59,11 @@ func Wired[T any]() *T {
 	}()
 	var data1 T
 	t := reflect.TypeOf(data1)
-	if t.Elem().Kind() != reflect.Struct {
-		panic("Fun: " + t.Elem().Name() + " It must be a structure")
+	if t.Kind() != reflect.Struct {
+		panic("Fun: " + t.Name() + " It must be a structure")
 	}
-	if isPrivate(t.Elem().Name()) {
-		panic("Fun:" + t.Elem().Name() + " cannot be Private")
+	if isPrivate(t.Name()) {
+		panic("Fun:" + t.Name() + " cannot be Private")
 	}
 	var data *T
 	GetFun()
