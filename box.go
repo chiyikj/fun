@@ -58,14 +58,16 @@ func Wired[T any]() *T {
 		}
 	}()
 	var data1 T
-	t := reflect.TypeOf(data1)
-	if t.Kind() != reflect.Struct {
-		panic("Fun: " + t.Name() + " It must be a structure")
-	}
-	if isPrivate(t.Name()) {
-		panic("Fun:" + t.Name() + " cannot be Private")
-	}
+	t1 := reflect.TypeOf(data1)
 	var data *T
+	t := reflect.TypeOf(data)
+	if t1.Kind() != reflect.Struct {
+		panic("Fun: " + t1.Name() + " It must be a structure")
+	}
+	if isPrivate(t1.Name()) {
+		panic("Fun:" + t1.Name() + " cannot be Private")
+	}
+
 	GetFun()
 	fun.mu.Lock()
 	if box, isWired := fun.boxList.Load(t); isWired {
