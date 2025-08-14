@@ -47,7 +47,7 @@ func guardWired(data Guard, fun *Fun) {
 	fun.guardList = append(fun.guardList, &guard)
 }
 
-func Wired[T any]() T {
+func Wired[T any]() *T {
 	defer func() {
 		if err := recover(); err != nil {
 			stackBuf := make([]byte, 8192)
@@ -57,19 +57,20 @@ func Wired[T any]() T {
 			os.Exit(0)
 		}
 	}()
-	var data T
-	t := reflect.TypeOf(data)
-	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
-		panic("Fun: " + t.Elem().Name() + " It must be a pointer to a structure")
+	var data1 T
+	t := reflect.TypeOf(data1)
+	if t.Elem().Kind() != reflect.Struct {
+		panic("Fun: " + t.Elem().Name() + " It must be a structure")
 	}
 	if isPrivate(t.Elem().Name()) {
 		panic("Fun:" + t.Elem().Name() + " cannot be Private")
 	}
+	var data *T
 	GetFun()
 	fun.mu.Lock()
 	if box, isWired := fun.boxList.Load(t); isWired {
 		fun.mu.Unlock()
-		return box
+		return box.(*T)
 	}
 	v := reflect.ValueOf(data)
 	fun.boxList.Store(t, v)
