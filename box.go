@@ -69,12 +69,13 @@ func Wired[T any]() *T {
 
 	GetFun()
 	fun.mu.Lock()
-	if box, isWired := fun.boxList.Load(reflect.TypeOf(data)); isWired {
+	t1 := reflect.TypeOf(data)
+	if box, isWired := fun.boxList.Load(t1); isWired {
 		fun.mu.Unlock()
 		return box.(*T)
 	}
 	v := reflect.ValueOf(data)
-	fun.boxList.Store(t, v)
+	fun.boxList.Store(t1, v)
 	fun.mu.Unlock()
 	boxList := map[reflect.Type]bool{}
 	for i := 0; i < t.NumField(); i++ {
