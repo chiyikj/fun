@@ -58,19 +58,18 @@ func Wired[T any]() *T {
 		}
 	}()
 	var data1 T
-	t1 := reflect.TypeOf(data1)
-	var data *T
-	t := reflect.TypeOf(data)
-	if t1.Kind() != reflect.Struct {
-		panic("Fun: " + t1.Name() + " It must be a structure")
+	t := reflect.TypeOf(data1)
+	data := new(T)
+	if t.Kind() != reflect.Struct {
+		panic("Fun: " + t.Name() + " It must be a structure")
 	}
-	if isPrivate(t1.Name()) {
-		panic("Fun:" + t1.Name() + " cannot be Private")
+	if isPrivate(t.Name()) {
+		panic("Fun:" + t.Name() + " cannot be Private")
 	}
 
 	GetFun()
 	fun.mu.Lock()
-	if box, isWired := fun.boxList.Load(t); isWired {
+	if box, isWired := fun.boxList.Load(reflect.TypeOf(data)); isWired {
 		fun.mu.Unlock()
 		return box.(*T)
 	}
@@ -78,8 +77,8 @@ func Wired[T any]() *T {
 	fun.boxList.Store(t, v)
 	fun.mu.Unlock()
 	boxList := map[reflect.Type]bool{}
-	for i := 0; i < t.Elem().NumField(); i++ {
-		c := t.Elem().Field(i)
+	for i := 0; i < t.NumField(); i++ {
+		c := t.Field(i)
 		fieldTag := newTag(c.Tag)
 
 		// 检查是否有 "auto" 标签
