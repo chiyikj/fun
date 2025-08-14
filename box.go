@@ -72,7 +72,7 @@ func Wired[T any]() *T {
 	t1 := reflect.TypeOf(data)
 	if box, isWired := fun.boxList.Load(t1); isWired {
 		fun.mu.Unlock()
-		return box.(*T)
+		return box.(reflect.Value).Interface().(*T)
 	}
 	v := reflect.ValueOf(data)
 	fun.boxList.Store(t1, v)
