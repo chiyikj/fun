@@ -47,7 +47,7 @@ func guardWired(data Guard, fun *Fun) {
 	fun.guardList = append(fun.guardList, &guard)
 }
 
-func Wired(data any) {
+func Wired[T any]() T {
 	defer func() {
 		if err := recover(); err != nil {
 			stackBuf := make([]byte, 8192)
@@ -57,6 +57,7 @@ func Wired(data any) {
 			os.Exit(0)
 		}
 	}()
+	var data T
 	t := reflect.TypeOf(data)
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		panic("Fun: " + t.Elem().Name() + " It must be a pointer to a structure")
@@ -67,9 +68,8 @@ func Wired(data any) {
 	GetFun()
 	fun.mu.Lock()
 	if box, isWired := fun.boxList.Load(t); isWired {
-		reflect.ValueOf(data).Elem().Set(box.(reflect.Value).Elem())
 		fun.mu.Unlock()
-		return
+		return box
 	}
 	v := reflect.ValueOf(data)
 	fun.boxList.Store(t, v)
@@ -97,6 +97,7 @@ func Wired(data any) {
 	if newMethod.IsValid() {
 		newMethod.Call(nil)
 	}
+	return data
 }
 
 func (fun *Fun) autowired(fieldValue reflect.Value) {
