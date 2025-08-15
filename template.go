@@ -24,7 +24,7 @@ export default class fun {
 }
 
 func genServiceTemplate() string {
-	return `import type {result,on} from "fun-client";
+	return `import type {result{{- if .IsIncludeProxy }},on{{- end}}} from "fun-client";
 import {defaultApi} from "./fun"
 {{- range .GenImport}}
 import type {{.Name}} from "./{{.Path}}";

@@ -32,6 +32,7 @@ type genServiceType struct {
 	ServiceName       string
 	GenMethodTypeList []*genMethodType
 	GenImport         []*genImportType
+	IsIncludeProxy    bool
 }
 
 type genClassType struct {
@@ -81,13 +82,16 @@ func genService(
 	var nestedImports []*genImportType
 
 	// 遍历服务中的每个方法
+	isIncludeProxy := false
 	for _, method := range service.methodList {
 		var returnValueText string
 		var dtoText string
 		var argsText string
 		var genericTypeText string
 
-		// 处理返回值类型
+		if method.isProxy {
+			isIncludeProxy = true
+		}
 		if method.method.Type.NumOut() == 0 {
 			returnValueText = "null"
 		} else {
@@ -137,7 +141,7 @@ func genService(
 			GenericTypeText: genericTypeText,
 		})
 	}
-
+	serviceContext.IsIncludeProxy = isIncludeProxy
 	// 去重导入路径
 	serviceContext.GenImport = deduplicateServiceImports(nestedImports)
 
