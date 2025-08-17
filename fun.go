@@ -259,13 +259,12 @@ func (fun *Fun) returnData(id string, requestId string, data any, stackTrace str
 	// 尝试将 data 断言为 Result 类型
 	if value, ok := data.(Result[any]); ok {
 		result = value
-		result.Id = requestId
 		InfoLogger(result)
 	} else {
 		result = callError(getErrorString(data))
-		result.Id = requestId
 		ErrorLogger(getErrorString(data) + "\n" + stackTrace)
 	}
+	result.Id = requestId
 	map1 := ToLowerMap(result)
 	fun.send(id, map1)
 }
