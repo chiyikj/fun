@@ -66,7 +66,6 @@ func Wired[T any]() *T {
 	if isPrivate(t.Name()) {
 		panic("Fun:" + t.Name() + " cannot be Private")
 	}
-
 	GetFun()
 	fun.mu.Lock()
 	t1 := reflect.TypeOf(data)

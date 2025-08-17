@@ -112,7 +112,7 @@ func StartTls(certFile string, keyFile string, addr ...uint16) {
 	InfoLogger("Server started on port " + isPort(addr))
 	err := http.ListenAndServeTLS("localhost:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
-		panic(err)
+		PanicLogger(getErrorString(err))
 	}
 }
 

@@ -100,11 +100,11 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 			}
 		}()
 		if err != nil {
-			panic(err)
+			panic(callError(err.Error()))
 		}
 		if request.Id == "" || request.MethodName == "" || request.ServiceName == "" {
 			//处理为空的情况
-			panic("fun: request fields cannot be empty (id, methodName, serviceName)")
+			panic(callError("fun: request fields cannot be empty (id, methodName, serviceName)"))
 		}
 		ctx.RequestId = request.Id
 		ctx.ServiceName = request.ServiceName
@@ -128,28 +128,28 @@ func (fun *Fun) dto(request *RequestInfo[map[string]any], ctx *Ctx) {
 
 	service, ok := fun.serviceList[request.ServiceName]
 	if !ok {
-		panic(fmt.Errorf("fun: service %s not found", request.MethodName))
+		panic(callError(fmt.Sprintf("fun: service %s not found", request.MethodName)))
 	}
 	method, ok := service.methodList[request.MethodName]
 	if !ok {
-		panic(fmt.Errorf("fun: method %s not found", request.MethodName))
+		panic(callError(fmt.Sprintf("fun: method %s not found", request.MethodName)))
 	}
 
 	if request.Type != ProxyType && request.Type != FuncType {
-		panic(fmt.Errorf("fun: method %s It is neither a function type nor a listener type", request.MethodName))
+		panic(callError(fmt.Sprintf("fun: method %s It is neither a function type nor a listener type", request.MethodName)))
 	}
 
 	if method.isProxy && request.Type != ProxyType {
-		panic(fmt.Errorf("fun: method %s is a proxy but type mismatch", request.MethodName))
+		panic(callError(fmt.Sprintf("fun: method %s is a proxy but type mismatch", request.MethodName)))
 	}
 
 	if !method.isProxy && request.Type != FuncType {
-		panic(fmt.Errorf("fun: method %s is not a proxy but type mismatch", request.MethodName))
+		panic(callError(fmt.Sprintf("fun: method %s is not a proxy but type mismatch", request.MethodName)))
 	}
 
 	if method.dto != nil {
 		if request.Dto == nil {
-			panic(fmt.Errorf("fun: method %s requires a DTO but none provided", request.MethodName))
+			panic(callError(fmt.Sprintf("fun: method %s requires a DTO but none provided", request.MethodName)))
 		}
 		// 创建目标类型的实例
 		dto := reflect.New(*method.dto).Interface()
@@ -157,17 +157,17 @@ func (fun *Fun) dto(request *RequestInfo[map[string]any], ctx *Ctx) {
 		// 将请求的DTO转换为JSON
 		jsonData, err := json.Marshal(request.Dto)
 		if err != nil {
-			panic(err)
+			panic(callError(err.Error()))
 		}
 
 		// 反序列化到目标类型
 		if err := json.Unmarshal(jsonData, dto); err != nil {
-			panic(err)
+			panic(callError(err.Error()))
 		}
 		checkDto(method.dto, *request.Dto)
 		err = fun.validate.Struct(dto)
 		if err != nil {
-			panic(err)
+			panic(callError(err.Error()))
 		}
 		requestData := reflect.ValueOf(dto).Elem()
 		fun.cellMethod(ctx, service, method, &requestData, request)
