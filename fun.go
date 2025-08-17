@@ -9,7 +9,6 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 )
@@ -267,7 +266,7 @@ func (fun *Fun) returnData(id string, requestId string, data any, stackTrace str
 		result.Id = requestId
 		ErrorLogger(getErrorString(data) + "\n" + stackTrace)
 	}
-	map1, _ := ToLowerMap(result)
+	map1 := ToLowerMap(result)
 	fun.send(id, map1)
 }
 
