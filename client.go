@@ -17,7 +17,7 @@ func SetTestClientId(id string) {
 var testClient *websocket.Conn = nil
 
 func client(port uint16) {
-	url := fmt.Sprintf("ws://localhost:%d?id=%s", port, clientId)
+	url := fmt.Sprintf("ws://127.0.0.1:%d?id=%s", port, clientId)
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	for err != nil {
 		conn, _, err = websocket.DefaultDialer.Dial(url, nil)

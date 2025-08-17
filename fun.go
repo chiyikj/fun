@@ -81,7 +81,7 @@ func Start(addr ...uint16) {
 	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
 	InfoLogger("Server started on port " + isPort(addr))
-	err := http.ListenAndServe("127.0.0.1:"+isPort(addr), nil)
+	err := http.ListenAndServe("0.0.0.0:"+isPort(addr), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -110,7 +110,7 @@ func StartTls(certFile string, keyFile string, addr ...uint16) {
 	}()
 	http.HandleFunc("/", handleWebSocket(GetFun()))
 	InfoLogger("Server started on port " + isPort(addr))
-	err := http.ListenAndServeTLS("localhost:"+isPort(addr), certFile, keyFile, nil)
+	err := http.ListenAndServeTLS("0.0.0.0:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
 		panic(err)
 	}
