@@ -1,6 +1,7 @@
 package fun
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -265,7 +267,8 @@ func (fun *Fun) returnData(id string, requestId string, data any, stackTrace str
 		result.Id = requestId
 		ErrorLogger(getErrorString(data) + "\n" + stackTrace)
 	}
-	fun.send(id, result)
+	map1, _ := ToLowerMap(result)
+	fun.send(id, map1)
 }
 
 func getErrorString(data any) string {
@@ -274,4 +277,54 @@ func getErrorString(data any) string {
 	} else {
 		return fmt.Sprintf("%v", data)
 	}
+}
+
+func ToLowerMap(obj interface{}) map[string]interface{} {
+	// 先将对象序列化为 JSON 字节
+	jsonBytes, _ := json.Marshal(obj)
+
+	// 再将 JSON 字节反序列化为 map
+	var m map[string]interface{}
+	_ = json.Unmarshal(jsonBytes, &m)
+
+	// 将所有键名转为小写
+	return convertKeyToLowerCase(m)
+}
+
+// convertKeyToLowerCase 递归地将 map 中的所有键转换为小写
+func convertKeyToLowerCase(m map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for k, v := range m {
+		lowerKey := firstLetterToLower(k)
+
+		// 如果值是 map 类型，递归处理
+		if nestedMap, ok := v.(map[string]interface{}); ok {
+			result[lowerKey] = convertKeyToLowerCase(nestedMap)
+			// 如果值是数组类型，检查数组中的每个元素
+		} else if arr, ok := v.([]interface{}); ok {
+			result[lowerKey] = convertArrayKeyToLowerCase(arr)
+		} else {
+			result[lowerKey] = v
+		}
+	}
+
+	return result
+}
+
+// convertArrayKeyToLowerCase 处理数组中的元素，如果元素是 map 则递归处理
+func convertArrayKeyToLowerCase(arr []interface{}) []interface{} {
+	result := make([]interface{}, len(arr))
+
+	for i, item := range arr {
+		if nestedMap, ok := item.(map[string]interface{}); ok {
+			result[i] = convertKeyToLowerCase(nestedMap)
+		} else if nestedArr, ok := item.([]interface{}); ok {
+			result[i] = convertArrayKeyToLowerCase(nestedArr)
+		} else {
+			result[i] = item
+		}
+	}
+
+	return result
 }

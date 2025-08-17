@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"text/template"
+	"unicode"
 )
 
 var directory = "../gen/ts/"
@@ -98,7 +99,7 @@ func genService(
 			returnType := method.method.Type.Out(0)
 
 			// 转换为 TypeScript 类型
-			returnValueText = typeToJsType(returnType)
+			returnValueText = firstLetterToLower(typeToJsType(returnType))
 
 			// 如果是结构体类型，递归生成导入路径
 			if returnType.Kind() == reflect.Ptr {
@@ -111,11 +112,9 @@ func genService(
 
 		// 处理 DTO 参数
 		if method.dto != nil {
-			dtoText += "dto:" + typeToJsType(*method.dto)
+			dtoText += "dto:" + firstLetterToLower(typeToJsType(*method.dto))
 			argsText += ",dto"
 			nestedImports = append(nestedImports, genStruct(*method.dto, visitedStructPaths))
-		} else {
-			argsText += ",null"
 		}
 
 		// 处理代理逻辑（on 回调）
@@ -134,11 +133,11 @@ func genService(
 
 		// 添加方法信息到服务上下文
 		serviceContext.GenMethodTypeList = append(serviceContext.GenMethodTypeList, &genMethodType{
-			MethodName:      method.method.Name,
+			MethodName:      firstLetterToLower(method.method.Name),
 			ReturnValueText: returnValueText,
 			DtoText:         dtoText,
 			ArgsText:        argsText,
-			GenericTypeText: genericTypeText,
+			GenericTypeText: firstLetterToLower(genericTypeText),
 		})
 	}
 	serviceContext.IsIncludeProxy = isIncludeProxy
@@ -149,7 +148,7 @@ func genService(
 	genCode(
 		genServiceTemplate(),
 		"",
-		service.serviceType.Name(),
+		firstLetterToLower(service.serviceType.Name()),
 		serviceContext,
 	)
 }
@@ -175,7 +174,7 @@ func genDefaultService() {
 
 	for _, service := range f.serviceList {
 		serviceContext := &genServiceType{
-			ServiceName:       service.serviceType.Name(),
+			ServiceName:       firstLetterToLower(service.serviceType.Name()),
 			GenMethodTypeList: []*genMethodType{},
 		}
 
@@ -193,12 +192,12 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 
 	// 如果路径已生成过，直接返回引用
 	if slices.Contains(visitedPaths, relativePath) {
-		return &genImportType{Name: t.Name(), Path: relativePath}
+		return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
 	}
 
 	// 创建结构体模板数据
 	structTemplate := genClassType{
-		Name: t.Name(),
+		Name: firstLetterToLower(t.Name()),
 	}
 
 	// 收集嵌套结构体的导入路径
@@ -218,8 +217,8 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 		}
 		// 生成字段类型并添加到模板
 		structTemplate.GenClassFieldType = append(structTemplate.GenClassFieldType, &genClassFieldType{
-			Name: name,
-			Type: jsType,
+			Name: firstLetterToLower(name),
+			Type: firstLetterToLower(jsType),
 		})
 
 		// 如果字段是结构体，递归生成导入路径
@@ -243,7 +242,7 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 	genCode(
 		genStructTemplate(),
 		relativePath,
-		t.Name(),
+		firstLetterToLower(t.Name()),
 		structTemplate,
 	)
 
@@ -252,8 +251,8 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 
 	// 返回结构体导入引用（含完整路径）
 	return &genImportType{
-		Name: t.Name(),
-		Path: relativePath + "/" + t.Name(),
+		Name: firstLetterToLower(t.Name()),
+		Path: relativePath + "/" + firstLetterToLower(t.Name()),
 	}
 }
 
@@ -268,6 +267,7 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 
 		// 计算相对路径
 		impPathParts := strings.Split(imp.Path, "/")
+		impPathParts[len(impPathParts)-1] = firstLetterToLower(impPathParts[len(impPathParts)-1])
 		commonPrefixLen := 0
 		for i := 0; i < len(basePath) && i < len(impPathParts); i++ {
 			if basePath[i] != impPathParts[i] {
@@ -275,7 +275,6 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 			}
 			commonPrefixLen++
 		}
-
 		// 构建相对路径前缀
 		var relativePathPrefix string
 		for i := commonPrefixLen; i < len(basePath); i++ {
@@ -285,7 +284,7 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 		// 保存结果
 		seen[imp.Path] = true
 		result = append(result, &genImportType{
-			Name: imp.Name,
+			Name: strings.ToLower(imp.Name),
 			Path: relativePathPrefix + strings.Join(impPathParts[commonPrefixLen:], "/"),
 		})
 	}
@@ -322,4 +321,30 @@ func genCode(templateContent string, relativePath string, outputFileName string,
 	if err != nil {
 		panic(err)
 	}
+}
+
+func firstLetterToLower(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	// 将字符串转换为rune切片以正确处理Unicode字符
+	runes := []rune(s)
+	// 将第一个rune转为小写
+	runes[0] = unicode.ToLower(runes[0])
+
+	// 转换回字符串并返回
+	return string(runes)
+}
+
+func firstLetterToUpper(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	// 将字符串转换为rune切片以正确处理Unicode字符
+	runes := []rune(s)
+	// 将第一个rune转为大写
+	runes[0] = unicode.ToUpper(runes[0])
+
+	// 转换回字符串并返回
+	return string(runes)
 }

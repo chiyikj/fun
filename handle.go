@@ -104,6 +104,8 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 		if err != nil {
 			panic(callError(err.Error()))
 		}
+		request.MethodName = firstLetterToUpper(request.MethodName)
+		request.ServiceName = firstLetterToUpper(request.ServiceName)
 		if request.Id == "" || request.MethodName == "" || request.ServiceName == "" {
 			//处理为空的情况
 			panic(callError("fun: request fields cannot be empty (id, methodName, serviceName)"))
