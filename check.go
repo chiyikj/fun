@@ -171,7 +171,7 @@ func checkDto(dto *reflect.Type, dtoMap any) {
 	if dtoType.Kind() == reflect.Struct {
 		for i := 0; i < dtoType.NumField(); i++ {
 			f := dtoType.Field(i)
-			value, ok := dtoMap.(map[string]any)[f.Name]
+			value, ok := dtoMap.(map[string]any)[firstLetterToLower(f.Name)]
 			if f.Type.Kind() != reflect.Ptr && (!ok || value == nil) {
 				panic("Fun:" + f.Name + " Dto must be a pointer or have a corresponding field in the map")
 			}
