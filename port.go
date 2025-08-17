@@ -8,10 +8,10 @@ import (
 
 func randomPort() uint16 {
 	var port uint16 = 3000
-	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	for err != nil {
 		port += 1
-		l, err = net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+		l, err = net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	}
 	defer func(l net.Listener) {
 		_ = l.Close()
