@@ -19,7 +19,6 @@ type RequestInfo[T any] struct {
 	Dto         *T
 	State       map[string]string
 	Type        uint8
-	Lang        *string
 }
 
 func GetRequestInfo(test *testing.T, service any, methodName string, dto any, state map[string]string) RequestInfo[any] {

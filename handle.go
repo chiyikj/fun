@@ -111,7 +111,6 @@ func (fun *Fun) handleMessage(messageType int, message *[]byte, timer **time.Tim
 		ctx.RequestId = request.Id
 		ctx.ServiceName = request.ServiceName
 		ctx.MethodName = request.MethodName
-		ctx.Lang = request.Lang
 		ctx.State = request.State
 		fun.handleRequest(&request, ctx)
 	}
@@ -172,17 +171,7 @@ func (fun *Fun) dto(request *RequestInfo[map[string]any], ctx *Ctx) {
 		if err != nil {
 			var err1 validator.ValidationErrors
 			errors.As(err, &err1)
-			if request.Lang != nil {
-				trans, found := fun.uni.GetTranslator(*request.Lang)
-				if !found {
-					panic(callError(fmt.Sprintf("fun: language '%s' not supported", *request.Lang)))
-				} else {
-					panic(callError(err1[0].Translate(trans)))
-				}
-
-			} else {
-				panic(callError(err1[0].Error()))
-			}
+			panic(callError(err1[0].Error()))
 		}
 		requestData := reflect.ValueOf(dto).Elem()
 		fun.cellMethod(ctx, service, method, &requestData, request)

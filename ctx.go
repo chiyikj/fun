@@ -8,7 +8,6 @@ type Ctx struct {
 	MethodName  string
 	ServiceName string
 	Push        func(id string, requestId string, data any) bool
-	Lang        *string
 	Close       func(id string, requestId string)
 	fun         *Fun
 }

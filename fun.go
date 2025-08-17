@@ -2,9 +2,6 @@ package fun
 
 import (
 	"fmt"
-	"github.com/go-playground/locales"
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -24,7 +21,6 @@ type Fun struct {
 	guardList   []*any
 	mu          sync.Mutex
 	validate    *validator.Validate
-	uni         *ut.UniversalTranslator
 }
 
 type service struct {
@@ -61,39 +57,14 @@ func BindValidate(tag string, fn validator.Func) {
 	}
 }
 
-func BindRegisterDefaultTranslations(translator locales.Translator, registerDefaultTranslations func(v *validator.Validate, trans ut.Translator) (err error)) {
-	defer func() {
-		if err := recover(); err != nil {
-			stackBuf := make([]byte, 8192)
-			stackSize := runtime.Stack(stackBuf, false)
-			stackTrace := string(stackBuf[:stackSize])
-			PanicLogger(getErrorString(err) + "\n" + stackTrace)
-			os.Exit(0)
-		}
-	}()
-	f := GetFun()
-	err := f.uni.AddTranslator(translator, true)
-	if err != nil {
-		panic(err)
-	}
-	trans, _ := f.uni.GetTranslator(translator.Locale())
-	err = registerDefaultTranslations(f.validate, trans)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func GetFun() *Fun {
 	once.Do(func() {
-		en1 := en.New()
-		uni := ut.New(en1, en1)
 		fun = &Fun{
 			connList:    &sync.Map{},
 			boxList:     &sync.Map{},
 			serviceList: map[string]*service{},
 			guardList:   []*any{},
 			validate:    validator.New(),
-			uni:         uni,
 		}
 	})
 	return fun
