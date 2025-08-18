@@ -173,7 +173,7 @@ func checkDto(dto *reflect.Type, dtoMap any) {
 			f := dtoType.Field(i)
 			value, ok := dtoMap.(map[string]any)[firstLetterToLower(f.Name)]
 			if f.Type.Kind() != reflect.Ptr && (!ok || value == nil) {
-				panic("Fun:" + f.Name + " Dto must be a pointer or have a corresponding field in the map")
+				panic(callError("Fun:" + f.Name + " Dto must be a pointer or have a corresponding field in the map"))
 			}
 			t := f.Type
 			if t.Kind() == reflect.Ptr {
@@ -187,7 +187,7 @@ func checkDto(dto *reflect.Type, dtoMap any) {
 		list, _ := dtoMap.([]any)
 		for _, value := range list {
 			if dtoType.Elem().Kind() != reflect.Ptr && value == nil {
-				panic("Fun:" + dtoType.Elem().Name() + " Dto must be a pointer or have a corresponding field in the map")
+				panic(callError("Fun:" + dtoType.Elem().Name() + " Dto must be a pointer or have a corresponding field in the map"))
 			}
 			t := dtoType.Elem()
 			if t.Kind() == reflect.Ptr {
