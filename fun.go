@@ -133,21 +133,21 @@ func (fun *Fun) close(id string, requestId string) {
 	}
 }
 
-func (fun *Fun) callGuard(service *service, serviceName string, methodName string, requestInfo *RequestInfo[map[string]any]) {
+func (fun *Fun) callGuard(service *service, ctx *Ctx) {
 	var guardList []*any
 	guardList = append(guardList, fun.guardList...)
 	guardList = append(guardList, service.guardList...)
 	for i := 0; i < len(guardList); i++ {
 		guard := *guardList[i]
 		g := guard.(Guard)
-		if err := g.Guard(serviceName, methodName, requestInfo.State); err != nil {
+		if err := g.Guard(*ctx); err != nil {
 			panic(*err)
 		}
 	}
 }
 
 func (fun *Fun) cellMethod(ctx *Ctx, service *service, registeredMethod *method, requestData *reflect.Value, requestInfo *RequestInfo[map[string]any]) {
-	fun.callGuard(service, requestInfo.ServiceName, requestInfo.MethodName, requestInfo)
+	fun.callGuard(service, ctx)
 	// 创建目标方法所属结构体的实例
 	serviceInstance := reflect.New(service.serviceType).Elem()
 
