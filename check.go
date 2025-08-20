@@ -145,7 +145,7 @@ func checkType(t reflect.Type) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
-	if strings.Contains(t.String(), "[") {
+	if !strings.Contains(t.String(), "[]") && strings.Contains(t.String(), "[") {
 		panic("Fun: " + t.Name() + " generic types are not supported")
 	}
 	switch t.Kind() {
