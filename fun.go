@@ -140,9 +140,7 @@ func (fun *Fun) callGuard(service *service, ctx *Ctx) {
 	for i := 0; i < len(guardList); i++ {
 		guard := *guardList[i]
 		g := guard.(Guard)
-		if err := g.Guard(*ctx); err != nil {
-			panic(*err)
-		}
+		g.Guard(*ctx)
 	}
 }
 
