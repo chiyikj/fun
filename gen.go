@@ -283,7 +283,7 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 		// 保存结果
 		seen[imp.Path] = true
 		result = append(result, &genImportType{
-			Name: strings.ToLower(imp.Name),
+			Name: firstLetterToLower(imp.Name),
 			Path: relativePathPrefix + strings.Join(impPathParts[commonPrefixLen:], "/"),
 		})
 	}
