@@ -261,6 +261,7 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 		// 解引用指针
 		if fieldType.Kind() == reflect.Ptr {
 			fieldType = fieldType.Elem()
+			name += "?"
 		}
 		// 生成字段类型并添加到模板
 		if !strings.Contains(jsType, "[]") && strings.Contains(jsType, "[") {
