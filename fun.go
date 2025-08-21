@@ -3,14 +3,15 @@ package fun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"os"
 	"reflect"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/websocket"
 )
 
 type Fun struct {
@@ -97,6 +98,10 @@ func Gen() {
 			PanicLogger(getErrorString(err) + "\n" + stackTrace)
 		}
 	}()
+	err := os.RemoveAll(directory)
+	if err != nil && !os.IsNotExist(err) {
+		panic(err)
+	}
 	genDefaultService()
 }
 

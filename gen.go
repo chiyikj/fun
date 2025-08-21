@@ -99,7 +99,14 @@ func genService(
 			returnType := method.method.Type.Out(0)
 
 			// 转换为 TypeScript 类型
-			returnValueText = firstLetterToLower(typeToJsType(returnType))
+			// 创建结构体模板数据
+			//处理泛类
+			t := firstLetterToLower(typeToJsType(returnType))
+			if !strings.Contains(t, "[]") && strings.Contains(t, "[") {
+				returnValueText = getGenericTypeName(t) + parseGenericTypeParams(t)
+			} else {
+				returnValueText = t
+			}
 
 			// 如果是结构体类型，递归生成导入路径
 			if returnType.Kind() == reflect.Ptr {
@@ -112,7 +119,12 @@ func genService(
 
 		// 处理 DTO 参数
 		if method.dto != nil {
-			dtoText += "dto:" + firstLetterToLower(typeToJsType(*method.dto))
+			v := firstLetterToLower(typeToJsType(*method.dto))
+			if !strings.Contains(v, "[]") && strings.Contains(v, "[") {
+				dtoText += "dto:" + getGenericTypeName(v) + parseGenericTypeParams(v)
+			} else {
+				dtoText += "dto:" + v
+			}
 			argsText += ",dto"
 			nestedImports = append(nestedImports, genStruct(*method.dto, visitedStructPaths))
 		}
@@ -185,21 +197,57 @@ func genDefaultService() {
 	genCode(genDefaultServiceTemplate(), "", "fun", genContext)
 }
 
+func parseGenericTypeParams(typeName string) string {
+	// 查找第一个 '[' 的位置
+	start := strings.Index(typeName, "[")
+	// 查找最后一个 ']' 的位置
+	end := strings.LastIndex(typeName, "]")
+
+	// 提取中括号内的内容
+	paramsStr := typeName[start+1 : end]
+
+	// 简单处理，按逗号分割（不考虑嵌套情况）
+	params := strings.Split(paramsStr, ",")
+
+	// 去除空格
+	for i, param := range params {
+		LL := strings.Split(strings.TrimSpace(param), ".")
+		params[i] = firstLetterToUpper(LL[len(LL)-1])
+	}
+
+	return strings.Join(params, "")
+}
+
+func getGenericTypeName(typeName string) string {
+	// 查找第一个 '[' 的位置
+	start := strings.Index(typeName, "[")
+
+	// 提取中括号内的内容
+	paramsStr := typeName[0:start]
+
+	return paramsStr
+}
+
 func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 	// 提取结构体所在的包路径并生成相对路径
 	pkgParts := strings.Split(t.PkgPath(), "/")
 	relativePath := strings.Join(pkgParts[1:], "/")
-
 	// 如果路径已生成过，直接返回引用
 	if slices.Contains(visitedPaths, relativePath) {
 		return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
 	}
 
+	var structTemplate genClassType
 	// 创建结构体模板数据
-	structTemplate := genClassType{
-		Name: firstLetterToLower(t.Name()),
+	if !strings.Contains(t.String(), "[]") && strings.Contains(t.String(), "[") {
+		structTemplate = genClassType{
+			Name: firstLetterToLower(getGenericTypeName(t.Name())) + parseGenericTypeParams(t.Name()),
+		}
+	} else {
+		structTemplate = genClassType{
+			Name: firstLetterToLower(t.Name()),
+		}
 	}
-
 	// 收集嵌套结构体的导入路径
 	var nestedImports []*genImportType
 
@@ -215,10 +263,17 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 			fieldType = fieldType.Elem()
 		}
 		// 生成字段类型并添加到模板
-		structTemplate.GenClassFieldType = append(structTemplate.GenClassFieldType, &genClassFieldType{
-			Name: firstLetterToLower(name),
-			Type: firstLetterToLower(jsType),
-		})
+		if !strings.Contains(jsType, "[]") && strings.Contains(jsType, "[") {
+			structTemplate.GenClassFieldType = append(structTemplate.GenClassFieldType, &genClassFieldType{
+				Name: firstLetterToLower(name),
+				Type: firstLetterToLower(getGenericTypeName(jsType)) + parseGenericTypeParams(jsType),
+			})
+		} else {
+			structTemplate.GenClassFieldType = append(structTemplate.GenClassFieldType, &genClassFieldType{
+				Name: firstLetterToLower(name),
+				Type: firstLetterToLower(jsType),
+			})
+		}
 
 		// 如果字段是结构体，递归生成导入路径
 		if fieldType.Kind() == reflect.Struct {
@@ -241,17 +296,22 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 	genCode(
 		genStructTemplate(),
 		relativePath,
-		firstLetterToLower(t.Name()),
+		structTemplate.Name,
 		structTemplate,
 	)
 
 	// 标记该路径已生成
 	visitedPaths = append(visitedPaths, relativePath)
-
-	// 返回结构体导入引用（含完整路径）
-	return &genImportType{
-		Name: firstLetterToLower(t.Name()),
-		Path: relativePath + "/" + firstLetterToLower(t.Name()),
+	if !strings.Contains(t.String(), "[]") && strings.Contains(t.String(), "[") {
+		return &genImportType{
+			Name: structTemplate.Name,
+			Path: relativePath + "/" + structTemplate.Name,
+		}
+	} else {
+		return &genImportType{
+			Name: firstLetterToLower(t.Name()),
+			Path: relativePath + "/" + structTemplate.Name,
+		}
 	}
 }
 
@@ -283,7 +343,7 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 		// 保存结果
 		seen[imp.Path] = true
 		result = append(result, &genImportType{
-			Name: strings.ToLower(imp.Name),
+			Name: firstLetterToLower(imp.Name),
 			Path: relativePathPrefix + strings.Join(impPathParts[commonPrefixLen:], "/"),
 		})
 	}
@@ -315,7 +375,6 @@ func genCode(templateContent string, relativePath string, outputFileName string,
 			panic(err)
 		}
 	}
-
 	err = os.WriteFile(fullPath+outputFileName+".ts", code, 0644)
 	if err != nil {
 		panic(err)

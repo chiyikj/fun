@@ -44,8 +44,7 @@ export default class {{.ServiceName}} {
 }
 
 func genStructTemplate() string {
-	return `{{- range .GenImport}}import type {{.Name}} from "./{{.Path}}";{{- end}}
-export default interface {{.Name}} {
+	return `{{- range .GenImport}}import type {{.Name}} from "./{{.Path}}";{{"\n"}}{{- end}}export default interface {{.Name}} {
   {{- range .GenClassFieldType}}
   {{.Name}}:{{.Type}}
   {{- end}}
