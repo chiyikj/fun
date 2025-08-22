@@ -364,12 +364,12 @@ func deduplicateStructImports(imports []*genImportType, basePath []string) []*ge
 func genCode(templateContent string, relativePath string, outputFileName string, templateData any) {
 	tmpl, err := template.New("ts").Parse(templateContent)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, templateData)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	code := buf.Bytes()
 
@@ -382,12 +382,12 @@ func genCode(templateContent string, relativePath string, outputFileName string,
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(fullPath, os.ModePerm)
 		if err != nil {
-			panic(err)
+			panic(err.Error())
 		}
 	}
 	err = os.WriteFile(fullPath+outputFileName+".ts", code, 0644)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 
