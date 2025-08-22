@@ -115,6 +115,15 @@ func genService(
 			if returnType.Kind() == reflect.Struct {
 				nestedImports = append(nestedImports, genStruct(returnType, visitedStructPaths))
 			}
+			if returnType.Kind() == reflect.Slice {
+				fieldType := returnType.Elem()
+				if fieldType.Kind() == reflect.Ptr {
+					fieldType = fieldType.Elem()
+				}
+				if fieldType.Kind() == reflect.Struct {
+					nestedImports = append(nestedImports, genStruct(fieldType, visitedStructPaths))
+				}
+			}
 		}
 
 		// 处理 DTO 参数
