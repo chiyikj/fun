@@ -1,8 +1,9 @@
 package fun
 
 import (
-	"github.com/gorilla/websocket"
 	"reflect"
+
+	"github.com/gorilla/websocket"
 )
 
 // 普通发送信息
@@ -24,7 +25,7 @@ func (fun *Fun) Push(id string, requestId string, data any) bool {
 	on, ok := loadConnInfo.onList.Load(requestId)
 	if ok {
 		method := fun.serviceList[on.(onType).serviceName].methodList[on.(onType).methodName]
-		if method.method.Type.Out(0) == reflect.TypeOf(data) {
+		if method.method.Type.Out(0).Elem() == reflect.TypeOf(data) {
 			result := success(data)
 			result.Id = requestId
 			err := loadConnInfo.conn.WriteJSON(result)
