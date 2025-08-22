@@ -28,7 +28,8 @@ func (fun *Fun) Push(id string, requestId string, data any) bool {
 		if method.method.Type.Out(0).Elem() == reflect.TypeOf(data) {
 			result := success(data)
 			result.Id = requestId
-			err := loadConnInfo.conn.WriteJSON(result)
+			map1 := ToLowerMap(result)
+			err := loadConnInfo.conn.WriteJSON(map1)
 			if err != nil {
 				return false
 			}
