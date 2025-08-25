@@ -55,7 +55,7 @@ func BindValidate(tag string, fn validator.Func) {
 	f := GetFun()
 	err := f.validate.RegisterValidation(tag, fn)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 
@@ -85,7 +85,7 @@ func Start(addr ...uint16) {
 	InfoLogger("Server started on port " + isPort(addr))
 	err := http.ListenAndServe("0.0.0.0:"+isPort(addr), nil)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 
@@ -100,7 +100,7 @@ func Gen() {
 	}()
 	err := os.RemoveAll(directory)
 	if err != nil && !os.IsNotExist(err) {
-		panic(err)
+		panic(err.Error())
 	}
 	genDefaultService()
 }
@@ -118,7 +118,7 @@ func StartTls(certFile string, keyFile string, addr ...uint16) {
 	InfoLogger("Server started on port " + isPort(addr))
 	err := http.ListenAndServeTLS("0.0.0.0:"+isPort(addr), certFile, keyFile, nil)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 
