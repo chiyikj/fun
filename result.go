@@ -1,5 +1,7 @@
 package fun
 
+import "reflect"
+
 const (
 	successCode = iota
 	cellErrorCode
@@ -16,7 +18,25 @@ type Result[T any] struct {
 }
 
 func success(data any) Result[any] {
-	return Result[any]{Data: &data, Status: successCode}
+	var resultData *any
+	if data != nil {
+		// 检查是否为切片类型
+		dataType := reflect.TypeOf(data)
+		if dataType.Kind() == reflect.Slice {
+			// 检查是否为空切片
+			dataValue := reflect.ValueOf(data)
+			if dataValue.Len() == 0 {
+				// 创建一个新的空切片而不是nil
+				emptySlice := reflect.MakeSlice(dataValue.Type(), 0, 0).Interface()
+				resultData = &emptySlice
+			} else {
+				resultData = &data
+			}
+		} else {
+			resultData = &data
+		}
+	}
+	return Result[any]{Data: resultData, Status: successCode}
 }
 
 func Error(code uint16, msg string) Result[any] {
