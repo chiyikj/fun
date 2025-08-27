@@ -1,279 +1,275 @@
-# Fun Websocket Framework
+# Fun Framework
 
-Fun 是一个基于 WebSocket 的实时通信框架，旨在简化前后端交互和微服务架构的开发。
+[![GoDoc](https://godoc.org/github.com/chiyikjk/fun?status.svg)](https://godoc.org/github.com/chiyikjk/fun) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-官方网站: https://fun.cyi.cc/
+<a href="https://fun.chiyikjk.com">官方网站</a>
 
-## 🌟 特性
+Fun 是一个基于 Go 语言的 WebSocket 框架，提供了服务绑定、依赖注入、参数验证、日志记录等功能。它专注于简化 WebSocket 应用开发，支持自动生成 TypeScript 客户端代码，让前后端开发更加高效。
 
-- **WebSocket 通信**: 基于 WebSocket 实现高性能实时通信
-- **依赖注入**: 自动化依赖注入，简化组件间依赖管理
-- **类型安全**: 强类型检查，提供编译时安全保障
-- **代码生成**: 自动生成 TypeScript 客户端代码
-- **拦截器支持**: 支持 Guard 拦截器，实现权限验证等通用逻辑
-- **结构化数据传输**: 支持复杂数据结构的序列化和反序列化
+## 特性
 
-## 📦 安装
+- 🚀 基于 Gorilla WebSocket 构建
+- 🔧 自动依赖注入
+- 🛡️ 参数验证（集成 validator.v10）
+- 📝 多级别日志系统（支持文件和终端输出）
+- 🔄 WebSocket 心跳检测和连接管理
+- 🎯 自动生成 TypeScript 客户端代码
+- 🧪 内置测试工具
+- 🛡️ 守卫机制（类似中间件）
+- 📦 结构化响应格式
+
+## 快速开始
+
+### 1. 安装
 
 ```bash
-go get github.com/chiyikj/fun
+go get github.com/chiyikjk/fun
 ```
 
+### 2. 创建简单服务
 
-## 🚀 快速开始
-
-### 1. 定义服务
-
-```go
-// userService.go
-package userService
-
-import (
-    "fun"
-)
-
-type UserService struct {
-    fun.Ctx
-    // 其他依赖字段
-}
-
-type User struct {
-    User string
-    Name *string
-}
-
-func (ctx UserService) HelloWord(user User) *int8 {
-    // 业务逻辑
-    return nil
-}
-
-func init() {
-    fun.BindService(UserService{})
-}
-```
-
-
-### 2. 启动服务
+创建 `main.go`：
 
 ```go
-// main.go
 package main
 
 import (
-    "fun"
-    _ "your-module/service/userService" // 导入你的服务
+    "github.com/chiyikjk/fun"
 )
 
+// 定义服务结构体
+type HelloService struct {
+    fun.Ctx // 必须嵌入 Ctx
+}
+
+// 定义 DTO
+type HelloDto struct {
+    Name string 
+}
+
+// 定义方法
+func (s *HelloService) Hello(dto HelloDto) string {
+    return "Hello, " + dto.Name
+}
+
 func main() {
-    fun.Gen()      // 生成客户端代码
-    fun.Start(3000) // 启动服务在端口 3000
+    // 绑定服务
+    fun.BindService(HelloService{})
+    
+    // 启动服务
+    fun.Start(3000)
 }
 ```
 
+### 3. 运行服务
 
-## 🛠 核心概念
+```bash
+go run main.go
+```
 
-### 服务 (Service)
+服务将在端口 3000 上启动。
 
-服务是业务逻辑的载体，每个服务结构体必须嵌入 `fun.Ctx` 作为第一个字段：
+### 4. 生成 TypeScript 客户端代码
+
+```go
+// 在 main.go 中添加
+fun.Gen()
+```
+
+运行后，TypeScript 代码将生成在 `../gen/ts/` 目录下。
+
+### 5. 客户端使用示例
+
+```typescript
+import fun from "./gen/ts/fun";
+
+// 创建客户端实例
+const client = fun.create("ws://localhost:3000");
+
+// 调用服务方法
+const result = await client.helloService.hello({ name: "World" });
+console.log(result); // "Hello, World"
+```
+
+## 核心概念
+
+### 服务（Service）
+
+服务是包含业务逻辑的结构体，必须嵌入 [fun.Ctx](file://f:\fun\ctx.go#L2-L12)：
 
 ```go
 type UserService struct {
-    fun.Ctx
-    // 其他依赖字段
+    fun.Ctx // 提供上下文信息
+    // 其他依赖...
 }
 ```
 
+### 方法（Method）
 
-### 上下文 (Ctx)
+服务中的公开方法会自动暴露为 WebSocket 接口：
 
-`fun.Ctx` 提供了请求上下文信息：
+```go
+func (s *UserService) GetUser(dto UserDto) *User {
+    // 业务逻辑
+    return &User{Name: dto.Name}
+}
+```
 
-- `Ip`: 客户端 IP 地址
-- `Id`: 客户端唯一标识
-- `State`: 状态信息
-- `RequestId`: 请求唯一标识
-- `Send`: 发送数据给客户端的方法
-- `Close`: 关闭请求连接的方法
+### DTO（Data Transfer Object）
+
+用于传递参数的对象，支持参数验证：
+
+```go
+type UserDto struct {
+    Name  string `validate:"required"`
+    Email string `validate:"required,email"`
+    Age   int    `validate:"min=0,max=150"`
+}
+```
 
 ### 依赖注入
 
-通过 `fun:"auto"` 标签实现自动依赖注入：
+使用 `fun.Wired[T]()` 进行依赖注入：
 
 ```go
-type Config struct {
-    Page int8
+type Repository struct {
+    // 数据库连接等
 }
 
-type X struct {
-    Name   string
-    Config *Config `fun:"auto"`
+func (r *Repository) New() {
+    // 初始化逻辑
 }
 
-func (config *Config) New() {
-    config.Page = 5
+type UserService struct {
+    fun.Ctx
+    Repo *Repository `fun:"auto"` // 自动注入
 }
 ```
 
+### 守卫（Guard）
 
-### 拦截器 (Guard)
-
-拦截器用于在方法执行前进行验证或预处理：
+类似中间件，用于请求前的处理：
 
 ```go
 type AuthGuard struct {
-    Config *Config `fun:"auto"`
+    // 依赖...
 }
 
-func (g AuthGuard) Guard(serviceName string, methodName string, state map[string]string) *fun.Result[any] {
-    // 实现权限验证逻辑
-    return nil // 返回 nil 表示验证通过
+func (g *AuthGuard) Guard(ctx fun.Ctx) {
+    // 鉴权逻辑
+    // 失败时可以 panic 错误
 }
 
-// 绑定服务时添加拦截器
-func init() {
-    fun.BindService(UserService{}, AuthGuard{})
-}
-```
+// 绑定全局守卫
+fun.BindGuard(AuthGuard{})
 
-
-### 代码生成
-
-框架支持自动生成 TypeScript 客户端代码：
-
-```go
-func main() {
-    fun.Gen() // 自动生成前端 TypeScript 代码到 dist 目录
-}
-```
-
-
-## 📞 API 使用
-
-### 启动服务
-
-```go
-// 启动 HTTP WebSocket 服务
-fun.Start(3000)
-
-// 启动 HTTPS WebSocket 服务
-fun.StartTls("cert.pem", "key.pem", 3000)
-```
-
-
-### 绑定服务
-
-```go
-// 绑定服务和全局拦截器
+// 或绑定服务级守卫
 fun.BindService(UserService{}, AuthGuard{})
 ```
 
+## 高级功能
 
-### 客户端调用
+### 代理模式（Proxy）
 
-生成的 TypeScript 客户端可以这样使用：
-
-```typescript
-import fun from "./dist/fun";
-
-const api = fun.create("ws://localhost:3000");
-const result = await api.UserService.HelloWord({User: "test"});
-```
-
-
-## 🧪 测试
-
-框架提供了便捷的测试工具：
+支持长连接模式，服务端可以主动推送数据：
 
 ```go
-type UserServiceTest struct {
-    Service UserService
-}
-
-func (test UserServiceTest) HelloWord() {
-    request := fun.GetRequestInfo(map[string]any{
-        "User": "abc",
-        "Name": "1212",
-    }, map[string]string{})
+func (s *UserService) Subscribe(dto SubscribeDto, close fun.ProxyClose) *chan string {
+    ch := make(chan string)
     
-    result := fun.MockRequest[*int8](
-        fun.GetClientInfo("123456"), 
-        request
-    )
+    // 处理关闭回调
+    close(func() {
+        close(ch)
+    })
     
-    // 验证结果
-    fmt.Println(result)
-}
-
-func main() {
-    fun.Test(UserServiceTest{})
-}
-```
-
-
-## 📁 项目结构
-
-```
-your-project/
-├── dist/                 # 自动生成的 TypeScript 客户端代码
-├── service/
-│   └── userService/
-│       └── userService.go # 服务定义
-├── main.go              # 主程序入口
-└── go.mod
-```
-
-
-## 📘 详细文档
-
-### 方法类型
-
-Fun 框架支持两种方法类型：
-
-1. **普通方法**: 返回结果给客户端
-```go
-func (ctx UserService) GetData() *UserData {
-    // 返回数据
-    return &UserData{...}
-}
-```
-
-
-2. **代理方法**: 支持推送更新
-```go
-func (ctx UserService) WatchData(proxy fun.ProxyClose) *UserData {
-    // 当需要推送更新时调用 ctx.Send()
     go func() {
-        // 模拟异步推送
-        time.Sleep(time.Second)
-        ctx.Send(ctx.Id, ctx.RequestId, &UserData{...})
+        for {
+            select {
+            case msg := <-ch:
+                s.Push(s.Id, s.RequestId, msg) // 推送数据
+            }
+        }
     }()
     
-    // 返回初始数据
-    return &UserData{...}
+    return &ch
 }
 ```
 
-
-### 错误处理
+### 日志系统
 
 ```go
-func (ctx UserService) GetData() *UserData {
-    // 返回自定义错误
-    if someCondition {
-        return fun.Error(404, "User not found")
-    }
-    
-    // 返回数据
-    return &UserData{...}
+// 配置日志
+logger := &fun.Logger{
+    Level:          fun.InfoLevel,
+    Mode:           fun.FileMode,
+    MaxSizeFile:    10,   // 10MB
+    MaxNumberFiles: 100,  // 最多100个文件
+    ExpireLogsDays: 7,    // 保留7天
+}
+fun.ConfigLogger(logger)
+
+// 使用日志
+fun.InfoLogger("服务启动成功")
+fun.ErrorLogger("发生错误", err)
+```
+
+### 参数验证
+
+集成 `validator.v10`，支持自定义验证规则：
+
+```go
+// 绑定自定义验证规则
+fun.BindValidate("custom", func(fl validator.FieldLevel) bool {
+    // 自定义验证逻辑
+    return true
+})
+
+// 在 DTO 中使用
+type CustomDto struct {
+    Field string `validate:"custom"`
 }
 ```
 
+## 测试支持
 
-## 🤝 贡献
+提供完整的测试工具：
 
-欢迎提交 Issue 和 Pull Request 来改进这个项目。
+```go
+func TestHelloService(t *testing.T) {
+    // 创建请求
+    request := fun.GetRequestInfo(t, HelloService{}, "Hello", HelloDto{Name: "World"}, nil)
+    
+    // 发起请求
+    result := fun.MockRequest[string](t, request)
+    
+    // 验证结果
+    if *result.Data != "Hello, World" {
+        t.Errorf("期望 'Hello, World', 得到 '%s'", *result.Data)
+    }
+}
+```
 
-## 📄 许可证
+## 配置选项
 
-本项目采用 MIT 许可证，详情请见 [LICENSE](LICENSE) 文件。
+### 服务配置
+
+```go
+// 启动 HTTP 服务
+fun.Start(3000)
+
+// 启动 HTTPS 服务
+fun.StartTls("cert.pem", "key.pem", 3000)
+```
+
+### 日志配置
+
+```go
+type Logger struct {
+    Level          uint8  // 日志级别
+    Mode           uint8  // 输出模式 (TerminalMode/FileMode)
+    MaxSizeFile    uint8  // 文件最大大小(MB)
+    MaxNumberFiles uint64 // 文件最多数量
+    ExpireLogsDays uint8  // 文件保留时间(天)
+}
+```
+欢迎提交 Issue 和 Pull Request！
