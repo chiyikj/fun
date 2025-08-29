@@ -53,17 +53,17 @@ func genStructTemplate() string {
 
 func genEnumTemplate() string {
 	return `export enum {{.Name}} {
-{{- range $index, $element := .Values}}
-  {{$element.Name}} = {{$index}},
+{{- range $index, $element := .Names}}
+  {{$element}},
 {{- end}}
 }
-
-export function {{.Name}}DisplayName(status: {{.Name}}): string | null {
-  switch (status) {
-  {{- range $index, $element := .Values}}
-    case {{$.Name}}.{{$element.Name}}:
-      return '{{$element.DisplayName}}';
-  {{- end}}
+{{if .DisplayNames}}
+export function {{.Name}}DisplayName({{.Name}}: {{.Name}}): string | null {
+  switch ({{.Name}}) {
+{{- range $index, $element := .Names}}
+    case {{$.Name}}.{{$element}}:
+      return '{{index $.DisplayNames $index}}';
+{{- end}}
     default:
       return null;
   }
@@ -71,9 +71,10 @@ export function {{.Name}}DisplayName(status: {{.Name}}): string | null {
 
 export function {{.Name}}DisplayNames(): string[] {
   return [
-  {{- range $element := .Values}}
-    '{{$element.DisplayName}}',
-  {{- end}}
+{{- range $index, $element := .DisplayNames}}
+    '{{$element}}',
+{{- end}}
   ];
-}`
+}
+{{end}}`
 }

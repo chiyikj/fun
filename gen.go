@@ -24,6 +24,12 @@ type genMethodType struct {
 	GenericTypeText string
 }
 
+type genEnumType struct {
+	Names        []string
+	displayNames []string
+	Name         string
+}
+
 type genImportType struct {
 	Name string
 	Path string
@@ -357,6 +363,27 @@ func getEnum(t reflect.Type, visitedEnumPaths []string) *genImportType {
 	if slices.Contains(visitedEnumPaths, relativePath) {
 		return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
 	}
+
+	var enumTemplate genEnumType
+	displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+	if t.Implements(displayEnumType) {
+		statusValue := reflect.New(displayEnumType).Elem()
+		enumValue := statusValue.Interface().(DisplayEnum)
+		enumTemplate.Names = enumValue.Names()
+		enumTemplate.displayNames = enumValue.DisplayNames()
+	} else {
+		enumType := reflect.TypeOf((*Enum)(nil)).Elem()
+		statusValue := reflect.New(enumType).Elem()
+		enumValue := statusValue.Interface().(Enum)
+		enumTemplate.Names = enumValue.Names()
+	}
+
+	genCode(
+		genEnumTemplate(),
+		relativePath,
+		firstLetterToLower(t.Name()),
+		enumTemplate,
+	)
 
 	return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
 }
