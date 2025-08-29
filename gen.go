@@ -58,7 +58,17 @@ func typeToJsType(t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		text = "number" + text
+		if t.Kind() == reflect.Uint8 {
+			enumType := reflect.TypeOf((*Enum)(nil)).Elem()
+			displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+			if t.Implements(displayEnumType) || t.Implements(enumType) {
+				text = t.Name() + text
+			} else {
+				text = "number" + text
+			}
+		} else {
+			text = "number" + text
+		}
 		break
 	case reflect.Bool:
 		text = "boolean" + text
@@ -78,6 +88,7 @@ func genService(
 	service *service,
 	serviceContext *genServiceType,
 	visitedStructPaths []string,
+	visitedEnumPaths []string,
 ) {
 	// 收集服务方法中涉及的结构体导入路径
 	var nestedImports []*genImportType
@@ -113,7 +124,7 @@ func genService(
 				returnType = returnType.Elem()
 			}
 			if returnType.Kind() == reflect.Struct {
-				nestedImports = append(nestedImports, genStruct(returnType, visitedStructPaths))
+				nestedImports = append(nestedImports, genStruct(returnType, visitedStructPaths, visitedEnumPaths))
 			}
 			if returnType.Kind() == reflect.Slice {
 				fieldType := returnType.Elem()
@@ -121,8 +132,13 @@ func genService(
 					fieldType = fieldType.Elem()
 				}
 				if fieldType.Kind() == reflect.Struct {
-					nestedImports = append(nestedImports, genStruct(fieldType, visitedStructPaths))
+					nestedImports = append(nestedImports, genStruct(fieldType, visitedStructPaths, visitedEnumPaths))
 				}
+			}
+			enumType := reflect.TypeOf((*Enum)(nil)).Elem()
+			displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+			if returnType.Kind() == reflect.Uint8 && (returnType.Implements(displayEnumType) || returnType.Implements(enumType)) {
+				nestedImports = append(nestedImports, getEnum(returnType, visitedEnumPaths))
 			}
 		}
 
@@ -135,7 +151,7 @@ func genService(
 				dtoText += "dto:" + v
 			}
 			argsText += ",dto"
-			nestedImports = append(nestedImports, genStruct(*method.dto, visitedStructPaths))
+			nestedImports = append(nestedImports, genStruct(*method.dto, visitedStructPaths, visitedEnumPaths))
 		}
 
 		// 处理代理逻辑（on 回调）
@@ -191,6 +207,7 @@ func deduplicateServiceImports(imports []*genImportType) []*genImportType {
 func genDefaultService() {
 	f := GetFun()
 	var visitedStructPaths []string
+	var visitedEnumPaths []string
 	genContext := gen{GenServiceList: []*genServiceType{}}
 
 	for _, service := range f.serviceList {
@@ -200,7 +217,7 @@ func genDefaultService() {
 		}
 
 		genContext.GenServiceList = append(genContext.GenServiceList, serviceContext)
-		genService(service, serviceContext, visitedStructPaths)
+		genService(service, serviceContext, visitedStructPaths, visitedEnumPaths)
 	}
 
 	genCode(genDefaultServiceTemplate(), "", "fun", genContext)
@@ -237,7 +254,7 @@ func getGenericTypeName(typeName string) string {
 	return paramsStr
 }
 
-func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
+func genStruct(t reflect.Type, visitedPaths []string, visitedEnumPaths []string) *genImportType {
 	// 提取结构体所在的包路径并生成相对路径
 	pkgParts := strings.Split(t.PkgPath(), "/")
 	relativePath := strings.Join(pkgParts[1:], "/")
@@ -287,12 +304,20 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 
 		// 如果字段是结构体，递归生成导入路径
 		if fieldType.Kind() == reflect.Struct {
-			nestedImports = append(nestedImports, genStruct(fieldType, visitedPaths))
+			nestedImports = append(nestedImports, genStruct(fieldType, visitedPaths, visitedEnumPaths))
 		}
 
 		if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.Struct {
-			nestedImports = append(nestedImports, genStruct(fieldType.Elem(), visitedPaths))
+			nestedImports = append(nestedImports, genStruct(fieldType.Elem(), visitedPaths, visitedEnumPaths))
 		}
+
+		enumType := reflect.TypeOf((*Enum)(nil)).Elem()
+		displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+
+		if fieldType.Kind() == reflect.Uint8 && (fieldType.Implements(displayEnumType) || fieldType.Implements(enumType)) {
+			nestedImports = append(nestedImports, getEnum(fieldType, visitedEnumPaths))
+		}
+
 	}
 
 	// 去重并计算相对路径
@@ -323,6 +348,9 @@ func genStruct(t reflect.Type, visitedPaths []string) *genImportType {
 			Path: relativePath + "/" + structTemplate.Name,
 		}
 	}
+}
+
+func getEnum(t reflect.Type, visitedEnumPaths []string) *genImportType {
 }
 
 func deduplicateStructImports(imports []*genImportType, basePath []string) []*genImportType {
