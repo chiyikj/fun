@@ -152,10 +152,10 @@ func checkType(t reflect.Type) {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.String, reflect.Bool:
-		displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+		displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
 		if t.Kind() == reflect.Uint8 && t.Implements(displayEnumType) {
-			statusValue := reflect.New(displayEnumType).Elem()
-			enumValue := statusValue.Interface().(DisplayEnum)
+			statusValue := reflect.New(t).Elem()
+			enumValue := statusValue.Interface().(displayEnum)
 			if len(enumValue.DisplayNames()) != len(enumValue.Names()) {
 				panic("Fun: " + t.Name() + " enum names and display names must be the same length")
 			}

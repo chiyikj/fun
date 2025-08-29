@@ -1,10 +1,10 @@
 package fun
 
-type Enum interface {
+type enum interface {
 	Names() []string
 }
 
-type DisplayEnum interface {
+type displayEnum interface {
 	DisplayNames() []string
 	Names() []string
 }

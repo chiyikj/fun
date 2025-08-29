@@ -65,8 +65,8 @@ func typeToJsType(t reflect.Type) string {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if t.Kind() == reflect.Uint8 {
-			enumType := reflect.TypeOf((*Enum)(nil)).Elem()
-			displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+			enumType := reflect.TypeOf((*enum)(nil)).Elem()
+			displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
 			if t.Implements(displayEnumType) || t.Implements(enumType) {
 				text = t.Name() + text
 			} else {
@@ -141,8 +141,8 @@ func genService(
 					nestedImports = append(nestedImports, genStruct(fieldType, visitedStructPaths, visitedEnumPaths))
 				}
 			}
-			enumType := reflect.TypeOf((*Enum)(nil)).Elem()
-			displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+			enumType := reflect.TypeOf((*enum)(nil)).Elem()
+			displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
 			if returnType.Kind() == reflect.Uint8 && (returnType.Implements(displayEnumType) || returnType.Implements(enumType)) {
 				nestedImports = append(nestedImports, getEnum(returnType, visitedEnumPaths))
 			}
@@ -317,8 +317,8 @@ func genStruct(t reflect.Type, visitedPaths []string, visitedEnumPaths []string)
 			nestedImports = append(nestedImports, genStruct(fieldType.Elem(), visitedPaths, visitedEnumPaths))
 		}
 
-		enumType := reflect.TypeOf((*Enum)(nil)).Elem()
-		displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+		enumType := reflect.TypeOf((*enum)(nil)).Elem()
+		displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
 
 		if fieldType.Kind() == reflect.Uint8 && (fieldType.Implements(displayEnumType) || fieldType.Implements(enumType)) {
 			nestedImports = append(nestedImports, getEnum(fieldType, visitedEnumPaths))
@@ -365,16 +365,14 @@ func getEnum(t reflect.Type, visitedEnumPaths []string) *genImportType {
 	}
 
 	var enumTemplate genEnumType
-	displayEnumType := reflect.TypeOf((*DisplayEnum)(nil)).Elem()
+	displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
+	statusValue := reflect.New(t).Elem()
 	if t.Implements(displayEnumType) {
-		statusValue := reflect.New(displayEnumType).Elem()
-		enumValue := statusValue.Interface().(DisplayEnum)
+		enumValue := statusValue.Interface().(displayEnum)
 		enumTemplate.Names = enumValue.Names()
 		enumTemplate.displayNames = enumValue.DisplayNames()
 	} else {
-		enumType := reflect.TypeOf((*Enum)(nil)).Elem()
-		statusValue := reflect.New(enumType).Elem()
-		enumValue := statusValue.Interface().(Enum)
+		enumValue := statusValue.Interface().(enum)
 		enumTemplate.Names = enumValue.Names()
 	}
 
