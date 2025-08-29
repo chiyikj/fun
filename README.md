@@ -178,7 +178,7 @@ enum userStatus {
   Pending,
 }
 
-export function userStatusDisplayName(value:userStatus): string | null {
+export function userStatusDisplayName(value:userStatus): string {
   switch (value) {
     case userStatus.Active:
       return '已激活';
@@ -187,7 +187,7 @@ export function userStatusDisplayName(value:userStatus): string | null {
     case userStatus.Pending:
       return '待审核';
     default:
-      return null;
+      return "未知";
   }
 }
 
