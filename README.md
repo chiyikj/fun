@@ -17,6 +17,7 @@ Fun 是一个基于 Go 语言的 WebSocket 框架，提供了服务绑定、依�
 - 🧪 内置测试工具
 - 🛡️ 守卫机制（类似中间件）
 - 📦 结构化响应格式
+- 🧭 枚举类型支持
 
 ## 快速开始
 
@@ -125,6 +126,80 @@ type UserDto struct {
     Email string `validate:"required,email"`
     Age   int    `validate:"min=0,max=150"`
 }
+```
+
+### 枚举（Enum）
+
+Fun 框架支持生成 TypeScript 枚举类型。要使用此功能，需要定义 `uint8` 类型并实现 `enum` 或 `displayEnum` 接口：
+
+#### 基础枚举
+
+```go
+// 实现 enum 接口
+type Status uint8
+
+func (s Status) Names() []string {
+    return []string{
+        "Active",
+        "Inactive",
+    }
+}
+```
+
+#### 显示枚举
+
+```go
+// 实现 displayEnum 接口
+type UserStatus uint8
+
+func (s UserStatus) Names() []string {
+    return []string{
+        "Active",
+        "Inactive",
+        "Pending",
+    }
+}
+
+func (s UserStatus) DisplayNames() []string {
+    return []string{
+        "已激活",
+        "未激活",
+        "待审核",
+    }
+}
+```
+
+生成的 TypeScript 代码：
+
+```typescript
+enum userStatus {
+  Active,
+  Inactive,
+  Pending,
+}
+
+export function userStatusDisplayName(value:userStatus): string | null {
+  switch (value) {
+    case userStatus.Active:
+      return '已激活';
+    case userStatus.Inactive:
+      return '未激活';
+    case userStatus.Pending:
+      return '待审核';
+    default:
+      return null;
+  }
+}
+
+export function userStatusDisplayNames(): string[] {
+  return [
+    '已激活',
+    '未激活',
+    '待审核',
+  ];
+}
+
+export default userStatus
 ```
 
 ### 依赖注入
