@@ -351,6 +351,14 @@ func genStruct(t reflect.Type, visitedPaths []string, visitedEnumPaths []string)
 }
 
 func getEnum(t reflect.Type, visitedEnumPaths []string) *genImportType {
+	pkgParts := strings.Split(t.PkgPath(), "/")
+	relativePath := strings.Join(pkgParts[1:], "/")
+	// 如果路径已生成过，直接返回引用
+	if slices.Contains(visitedEnumPaths, relativePath) {
+		return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
+	}
+
+	return &genImportType{Name: firstLetterToLower(t.Name()), Path: relativePath}
 }
 
 func deduplicateStructImports(imports []*genImportType, basePath []string) []*genImportType {

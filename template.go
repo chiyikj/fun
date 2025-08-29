@@ -50,3 +50,30 @@ func genStructTemplate() string {
   {{- end}}
 }`
 }
+
+func genEnumTemplate() string {
+	return `export enum {{.Name}} {
+{{- range $index, $element := .Values}}
+  {{$element.Name}} = {{$index}},
+{{- end}}
+}
+
+export function {{.Name}}DisplayName(status: {{.Name}}): string | null {
+  switch (status) {
+  {{- range $index, $element := .Values}}
+    case {{$.Name}}.{{$element.Name}}:
+      return '{{$element.DisplayName}}';
+  {{- end}}
+    default:
+      return null;
+  }
+}
+
+export function {{.Name}}DisplayNames(): string[] {
+  return [
+  {{- range $element := .Values}}
+    '{{$element.DisplayName}}',
+  {{- end}}
+  ];
+}`
+}
