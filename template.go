@@ -58,14 +58,14 @@ func genEnumTemplate() string {
 {{- end}}
 }
 {{if .DisplayNames}}
-export function {{.Name}}DisplayName(value:{{.Name}}): string | null {
+export function {{.Name}}DisplayName(value:{{.Name}}): string {
   switch (value) {
 {{- range $index, $element := .Names}}
     case {{$.Name}}.{{$element}}:
       return '{{index $.DisplayNames $index}}';
 {{- end}}
     default:
-      return null;
+      return "未知";
   }
 }
 
