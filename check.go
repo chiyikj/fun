@@ -153,6 +153,10 @@ func checkType(t reflect.Type) {
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.String, reflect.Bool:
 		displayEnumType := reflect.TypeOf((*displayEnum)(nil)).Elem()
+		enumType := reflect.TypeOf((*enum)(nil)).Elem()
+		if t.Kind() == reflect.Uint8 && (t.Implements(displayEnumType) || t.Implements(enumType)) && isPrivate(t.Name()) {
+			panic("Fun:" + t.Name() + " cannot be Private")
+		}
 		if t.Kind() == reflect.Uint8 && t.Implements(displayEnumType) {
 			statusValue := reflect.New(t).Elem()
 			enumValue := statusValue.Interface().(displayEnum)
