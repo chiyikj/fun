@@ -68,14 +68,6 @@ export function {{.Name}}DisplayName(value:{{.Name}}): string {
       return "未知";
   }
 }
-
-export function {{.Name}}DisplayNames(): string[] {
-  return [
-{{- range $index, $element := .DisplayNames}}
-    '{{$element}}',
-{{- end}}
-  ];
-}
 {{end}}
 export default {{.Name}}`
 }
