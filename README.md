@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/chiyikjk/fun?status.svg)](https://godoc.org/github.com/chiyikjk/fun) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-<a href="https://fun.chiyikjk.com">官方网站</a>
+<a href="https://fungo.ink">官方网站</a>
 
 Fun 是一个基于 Go 语言的 WebSocket 框架，提供了服务绑定、依赖注入、参数验证、日志记录等功能。它专注于简化 WebSocket 应用开发，支持自动生成 TypeScript 客户端代码，让前后端开发更加高效。
 
